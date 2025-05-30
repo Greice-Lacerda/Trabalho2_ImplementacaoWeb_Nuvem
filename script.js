@@ -25,7 +25,7 @@ const updateTaskId = document.getElementById("updateTaskId");
 const updateTituloInput = document.getElementById("updateTitulo");
 const updateDescricaoTextarea = document.getElementById("updateDescricao");
 const updateStatusSelect = document.getElementById("updateStatus");
-const saveUpdateBtn = document.getElementById("saveUpdateBtn"); // Adicionado ID do botão salvar
+const saveUpdateBtn = document.getElementById("saveUpdateBtn");
 const cancelUpdateBtn = document.getElementById("cancelUpdate");
 
 // Lista de itens de compras pré-definidos
@@ -360,7 +360,6 @@ tasksContainer.addEventListener("click", async (event) => {
 
 // Salvar Alterações (do formulário de atualização)
 saveUpdateBtn.addEventListener("click", async (event) => {
-  // Alterado para o novo ID
   event.preventDefault(); // Previne o comportamento padrão do formulário
   const id = updateTaskId.value;
   const titulo = updateTituloInput.value.trim();
