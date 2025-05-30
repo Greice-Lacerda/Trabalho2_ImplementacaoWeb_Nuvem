@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerenciador de Tarefas</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Minhas Tarefas</h1>
+
+      <div id="messageContainer" class="message"></div>
+
+      <div id="taskOptionContainer" style="margin-bottom: 20px">
+        <label>
+          <input
+            type="radio"
+            id="newTaskOption"
+            name="taskType"
+            value="newTask"
+            checked
+          />
+          Digitar Nova Tarefa
+        </label>
+        <label style="margin-left: 20px">
+          <input
+            type="radio"
+            id="createShoppingListOption"
+            name="taskType"
+            value="shoppingList"
+          />
+          Criar Lista de Compras
+        </label>
+      </div>
+
+      <div class="task-form" id="addTaskFormContent">
+        <input
+          type="text"
+          id="taskTitle"
+          placeholder="Título da Tarefa"
+          required
+        />
+        <textarea
+          id="taskDescription"
+          placeholder="Descrição (opcional)"
+        ></textarea>
+      </div>
+
+      <div id="shoppingListContainer" style="display: none">
+        <label>Selecione os itens para a lista de compras:</label>
+        <div id="shoppingListCheckboxes" class="checkbox-list"></div>
+      </div>
+
+      <fieldset>
+        <legend>Selecione o status da tarefa:</legend>
+        <select
+          id="taskStatus"
+          style="
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 20px;
+            color: blue;
+            font-style: bold;
+            margin-bottom: 10px;
+            box-shadow: rgb(13, 13, 13) 4px 4px 5px; /* Sombra para o botão */
+          "
+        >
+          <option value="Pendente">Pendente</option>
+          <option value="Em Progresso">Em Progresso</option>
+          <option value="Concluído">Concluído</option>
+        </select>
+        <button id="addTaskBtn">Adicionar Tarefa</button>
+      </fieldset>
+
+      <form id="updateForm" style="display: none">
+        <h2>Atualizar Tarefa</h2>
+        <input type="hidden" id="updateTaskId" />
+        <label for="updateTitulo">Título:</label>
+        <input type="text" id="updateTitulo" class="task-form-input" />
+
+        <label for="updateDescricao">Descrição:</label>
+        <textarea
+          id="updateDescricao"
+          rows="3"
+          class="task-form-input"
+        ></textarea>
+
+        <label for="updateStatus">Status:</label>
+        <select id="updateStatus" class="task-form-select">
+          <option value="Pendente">Pendente</option>
+          <option value="Em Progresso">Em Progresso</option>
+          <option value="Concluído">Concluído</option>
+        </select>
+
+        <button type="submit" id="saveUpdateBtn">Salvar Alterações</button>
+        <button type="button" id="cancelUpdate">Cancelar</button>
+      </form>
+
+      <div class="tasks-list">
+        <h2>Lista de Tarefas</h2>
+        <ul id="tasksContainer">
+          <li>Carregando tarefas...</li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
