@@ -98,23 +98,18 @@ function showMessage(msg, type) {
  */
 async function fetchAndRenderTasks() {
   taskList.innerHTML = "<li>Carregando tarefas...</li>"; // Mensagem de carregamento
+
   try {
-    // Chama a função 'fetchTasks' no Code.gs
-    await google.script.run
-      .withSuccessHandler(renderTasks) // Função de sucesso: renderiza as tarefas
-      .withFailureHandler(function (error) {
-        // Função de falha: exibe erro
-        console.error("Erro ao buscar tarefas:", error);
-        showMessage(`Erro ao carregar tarefas: ${error.message}`, "error");
-        taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
-      })
-      .fetchTasks(); // Executa a função do lado do servidor
+    const response = await fetch("https://script.google.com/macros/s/AKfycbxa0l581mXMEb8gVTwy-rkCzJ7h_K35YkmBkWeRHDvJcMiBo-f5BFLCGf5SFPCyJk7P/exec?action=fetchTasks");
+    const tasks = await response.json();
+    renderTasks(tasks);
   } catch (error) {
-    showMessage("Erro de conexão ao carregar tarefas.", "error");
-    taskList.innerHTML = "<li>Erro de conexão ao carregar tarefas.</li>";
-    console.error("Erro ao chamar fetchTasks:", error);
+    console.error("Erro ao buscar tarefas:", error);
+    showMessage(`Erro ao carregar tarefas: ${error.message}`, "error");
+    taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
   }
 }
+
 
 /**
  * Adiciona uma nova tarefa ao servidor (Planilha Google).
