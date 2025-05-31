@@ -1,10 +1,6 @@
 // A URL do seu Web App. ESTA É A URL CORRETA E VERIFICADA!
-<<<<<<< HEAD
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfPKU7ToXguj90ST4R6SxWbDuTIsj5onuRt3H-IPwmECdiEAnGZ5wek0l_fQ48QseA/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzeRAKMIyq4eNT8W7IZQ9GVKW_DP3EOhSyeRfoPapUho3IPfe07ph_yAEOsqL9QUkVT/exec";
 
-=======
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7fWQWsrnsf_OeTWkCNgdcFyqy9BHxA1auKjeIAOB-2tah4RUWvNGFy56XQBFlmf0/exec";
->>>>>>> a7035890a017201ea6673ab125f755acd28ffd20
 // Elementos do DOM
 const messageContainer = document.getElementById("messageContainer");
 const newTaskOption = document.getElementById("newTaskOption");
