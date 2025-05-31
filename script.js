@@ -6,6 +6,10 @@ const STATUS_MAP_DB_TO_UI = {
   completed: "Concluído",
 };
 
+// Este é o URL do seu Web App no Google Apps Script
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbxzklfRhvp6sEM8R2PFfWL5ThbrIDYs-jgGJP3tdiKptWk1ahTpxZz77MulJxmLND-q/exec";
+
 // --- Elementos do DOM ---
 const messageContainer = document.getElementById("messageContainer");
 const newTaskOption = document.getElementById("newTaskOption");
