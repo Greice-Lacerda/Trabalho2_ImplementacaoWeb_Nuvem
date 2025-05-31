@@ -40,7 +40,6 @@ header h1 {
   display: none;
   font-weight: bold;
   text-align: center;
-  animation: fadeIn 0.5s ease-out;
 }
 
 .message.success {
@@ -55,118 +54,106 @@ header h1 {
   border: 1px solid #f5c6cb;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Opções de tarefa */
+/* Opções de Tarefa/Lista */
 .options {
   display: flex;
   justify-content: center;
-  gap: 30px;
+  gap: 25px;
   margin-bottom: 25px;
+  background-color: #f8f9fa;
   padding: 15px;
-  background-color: #e9f5ff;
   border-radius: 8px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .options label {
   cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #0056b3;
-  font-size: 1.1em;
+  padding: 8px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+  color: #495057;
 }
 
 .options input[type="radio"] {
-  transform: scale(1.3);
-  cursor: pointer;
-  accent-color: #007bff;
+  display: none;
 }
 
-/* Formulários */
+.options input[type="radio"]:checked + label {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Seções de Formulário e Lista */
 .form-section {
-  background-color: #f9f9f9;
+  background-color: #f8f9fa;
   padding: 25px;
   border-radius: 8px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
-  margin-bottom: 30px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
-.form-fieldset {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  margin-top: 20px;
-  background-color: #fff;
+.form-section h2 {
+  color: #007bff;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+  text-align: center;
 }
 
-.form-fieldset legend {
+.form-section label {
+  display: block;
+  margin-bottom: 8px;
   font-weight: bold;
-  color: #0056b3;
-  padding: 0 10px;
-  font-size: 1.1em;
+  color: #555;
 }
 
-input[type="text"],
-textarea,
-.task-form-input {
+.task-form-input,
+.task-form-select,
+textarea {
   width: calc(100% - 22px);
-  padding: 12px;
+  padding: 10px;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
+  border: 1px solid #ced4da;
   border-radius: 5px;
   font-size: 1em;
-  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-input[type="text"]:focus,
-textarea:focus,
-.task-form-input:focus {
+.task-form-input:focus,
+.task-form-select:focus,
+textarea:focus {
   border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
-
-textarea {
-  resize: vertical;
-  min-height: 90px;
 }
 
 .task-form-select {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1em;
-  background-color: #fff;
+  /* Remove a seta padrão do select em alguns navegadores */
+  -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='292.4' height='292.4'%3E%3Cpath fill='%23007bff' d='M287,197.9c-3.2,3.2-8.3,3.2-11.6,0L146.2,71.3L16.9,197.9c-3.2,3.2-3.2-11.6,0c-3.2-3.2-3.2-8.3,0-11.6l135.9-136.9c3.2-3.2,8.3-3.2,11.6,0l135.9,136.9C290.3,189.6,290.3,194.7,287,197.9z'/%3E%3C/svg%3E");
+  /* Adiciona uma seta SVG personalizada */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23007bff' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Corrigido SVG */
   background-repeat: no-repeat;
-  background-position: right 10px top 50%;
-  background-size: 12px;
+  background-position: right 10px center; /* Ajustado para centralizar verticalmente */
+  background-size: 16px; /* Aumentado um pouco o tamanho */
+  padding-right: 30px; /* Adiciona espaço para a seta */
 }
 
 /* Botões */
-button {
+.primary-button,
+.secondary-button {
   padding: 12px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 1.1em;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  margin-right: 10px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-right: 10px; /* Espaçamento entre botões */
 }
 
 .primary-button {
@@ -176,7 +163,7 @@ button {
 
 .primary-button:hover {
   background-color: #0056b3;
-  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
 }
 
 .secondary-button {
@@ -186,30 +173,59 @@ button {
 
 .secondary-button:hover {
   background-color: #5a6268;
-  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
 }
 
-.delete-button {
-  background-color: #dc3545;
-  color: white;
+/* Checkbox list para lista de compras */
+.checkbox-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.delete-button:hover {
-  background-color: #c82333;
+.checkbox-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  color: #343a40;
+  cursor: pointer;
 }
 
-.edit-button {
-  background-color: #ffc107;
-  color: #333;
+.checkbox-list input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #007bff; /* Cor do checkbox quando marcado */
 }
 
-.edit-button:hover {
-  background-color: #e0a800;
+.small-text {
+  font-size: 0.85em;
+  color: #6c757d;
+  margin-top: -10px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
-/* Lista de tarefas */
+/* Lista de Tarefas */
 .tasks-list-section {
-  margin-top: 40px;
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.tasks-list-section h2 {
+  color: #007bff;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+  text-align: center;
 }
 
 .task-list {
@@ -218,21 +234,23 @@ button {
 }
 
 .task-list li {
-  background: #ffffff;
+  background-color: #fcfcfc;
   border: 1px solid #e0e0e0;
-  padding: 20px;
-  margin-bottom: 15px;
   border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 10px;
 }
 
-.task-list li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .task-title {
@@ -244,7 +262,7 @@ button {
 .task-description {
   font-size: 1em;
   color: #555;
-  white-space: pre-wrap;
+  white-space: pre-wrap; /* Preserva quebras de linha e espaços */
 }
 
 .task-actions {
@@ -267,66 +285,103 @@ button {
   letter-spacing: 0.5px;
 }
 
+/* Estilos de status para os LIs */
 .status-pending .task-status {
-  background-color: #ffc107;
+  background-color: #ffc107; /* Amarelo */
   color: #333;
 }
 
 .status-in_progress .task-status {
-  background-color: #17a2b8;
+  background-color: #17a2b8; /* Azul claro */
 }
 
 .status-completed .task-status {
-  background-color: #28a745;
+  background-color: #28a745; /* Verde */
 }
 
+/* Seletor de Status dentro da lista (para atualização rápida) */
 .status-selector {
   padding: 8px;
+  border: 1px solid #ced4da;
   border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 0.9em;
+  font-size: 0.95em;
+  background-color: white;
   cursor: pointer;
+  max-width: 150px; /* Limita a largura para melhor visualização */
 }
 
-/* Responsividade */
+/* Botões de ação da tarefa (Editar, Excluir) */
+.action-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.edit-btn {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.edit-btn:hover {
+  background-color: #e0a800;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+/* Responsividade básica */
 @media (max-width: 768px) {
   .container {
-    margin: 10px;
-    padding: 15px;
+    margin: 15px;
+    padding: 20px;
   }
 
   header h1 {
     font-size: 1.8em;
   }
 
-  h2 {
-    font-size: 1.5em;
-  }
-
   .options {
     flex-direction: column;
-    align-items: flex-start;
     gap: 15px;
   }
 
-  input[type="text"],
-  textarea,
-  .task-form-input,
-  .task-form-select {
-    width: calc(100% - 20px);
+  .options label {
+    text-align: center;
   }
-}
 
-@media (-ms-high-contrast: active) {
-  body {
-    background-color: black;
-    color: white;
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
   }
-}
 
-@media (forced-colors: active) {
-  body {
-    background-color: Canvas;
-    color: CanvasText;
+  .task-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .task-actions .status-selector {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .action-button {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .checkbox-list {
+    grid-template-columns: 1fr; /* Uma coluna em telas menores */
   }
 }
