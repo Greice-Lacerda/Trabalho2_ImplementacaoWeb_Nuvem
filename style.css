@@ -316,3 +316,17 @@ button {
     width: calc(100% - 20px);
   }
 }
+
+@media (-ms-high-contrast: active) {
+  body {
+    background-color: black;
+    color: white;
+  }
+}
+
+@media (forced-colors: active) {
+  body {
+    background-color: Canvas;
+    color: CanvasText;
+  }
+}
