@@ -1,4 +1,4 @@
-/* Seu CSS aqui */
+/* Reset e base */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
@@ -17,6 +17,7 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Cabeçalho */
 header {
   background-color: #007bff;
   color: white;
@@ -31,19 +32,12 @@ header h1 {
   font-size: 2.2em;
 }
 
-h2 {
-  color: #0056b3;
-  margin-top: 30px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 1.8em;
-}
-
+/* Mensagens */
 .message {
   padding: 12px;
   margin-bottom: 20px;
   border-radius: 6px;
-  display: none; /* Oculto por padrão */
+  display: none;
   font-weight: bold;
   text-align: center;
   animation: fadeIn 0.5s ease-out;
@@ -72,7 +66,7 @@ h2 {
   }
 }
 
-/* Opções de rádio */
+/* Opções de tarefa */
 .options {
   display: flex;
   justify-content: center;
@@ -157,8 +151,8 @@ textarea {
   border-radius: 5px;
   font-size: 1em;
   background-color: #fff;
-  appearance: none; /* Remove seta padrão em alguns navegadores */
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2C197.9c-3.2%2C3.2-8.3%2C3.2-11.6%2C0L146.2%2C71.3L16.9%2C197.9c-3.2%2C3.2-8.3%2C3.2-11.6%2C0c-3.2-3.2-3.2-8.3%2C0-11.6l135.9-136.9c3.2-3.2%2C8.3-3.2%2C11.6%2C0l135.9%2C136.9C290.3%2C189.6%2C290.3%2C194.7%2C287%2C197.9z%22%2F%3E%3C%2Fsvg%3E"); /* Seta customizada */
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='292.4' height='292.4'%3E%3Cpath fill='%23007bff' d='M287,197.9c-3.2,3.2-8.3,3.2-11.6,0L146.2,71.3L16.9,197.9c-3.2,3.2-3.2-11.6,0c-3.2-3.2-3.2-8.3,0-11.6l135.9-136.9c3.2-3.2,8.3-3.2,11.6,0l135.9,136.9C290.3,189.6,290.3,194.7,287,197.9z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px top 50%;
   background-size: 12px;
@@ -172,7 +166,7 @@ button {
   cursor: pointer;
   font-size: 1.1em;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  margin-right: 10px; /* Espaçamento entre botões */
+  margin-right: 10px;
 }
 
 .primary-button {
@@ -213,34 +207,7 @@ button {
   background-color: #e0a800;
 }
 
-/* Lista de Compras Checkboxes */
-.checkbox-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
-  margin-top: 15px;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #fff;
-}
-
-.checkbox-list label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: normal;
-  cursor: pointer;
-  font-size: 0.95em;
-}
-
-.checkbox-list input[type="checkbox"] {
-  transform: scale(1.1);
-  accent-color: #28a745;
-  cursor: pointer;
-}
-
-/* Lista de Tarefas */
+/* Lista de tarefas */
 .tasks-list-section {
   margin-top: 40px;
 }
@@ -277,12 +244,12 @@ button {
 .task-description {
   font-size: 1em;
   color: #555;
-  white-space: pre-wrap; /* Preserva quebras de linha */
+  white-space: pre-wrap;
 }
 
 .task-actions {
   display: flex;
-  flex-wrap: wrap; /* Quebra linha se houver muitos botões */
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   margin-top: 10px;
@@ -300,17 +267,18 @@ button {
   letter-spacing: 0.5px;
 }
 
-/* Estilos para o status (baseados nos valores "DB" para a classe CSS) */
 .status-pending .task-status {
   background-color: #ffc107;
   color: #333;
-} /* Amarelo */
+}
+
 .status-in_progress .task-status {
   background-color: #17a2b8;
-} /* Azul turquesa */
+}
+
 .status-completed .task-status {
   background-color: #28a745;
-} /* Verde */
+}
 
 .status-selector {
   padding: 8px;
@@ -320,55 +288,31 @@ button {
   cursor: pointer;
 }
 
-.task-actions button {
-  padding: 8px 15px;
-  font-size: 0.9em;
-}
-
-/* Footer */
-footer {
-  text-align: center;
-  padding: 20px 0;
-  margin-top: 30px;
-  background-color: #e9ecef;
-  color: #6c757d;
-  border-top: 1px solid #ddd;
-  font-size: 0.9em;
-}
-
 /* Responsividade */
 @media (max-width: 768px) {
   .container {
     margin: 10px;
     padding: 15px;
   }
+
   header h1 {
     font-size: 1.8em;
   }
+
   h2 {
     font-size: 1.5em;
   }
+
   .options {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
+
   input[type="text"],
   textarea,
   .task-form-input,
   .task-form-select {
     width: calc(100% - 20px);
-  }
-  button {
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-  .task-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .status-selector {
-    width: 100%;
   }
 }

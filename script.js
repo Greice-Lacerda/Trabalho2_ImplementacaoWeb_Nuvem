@@ -1,15 +1,18 @@
 // Mapeamento de status: do formato interno (DB) para o formato de exibição (UI)
-// Usado no cliente apenas para renderizar corretamente as classes CSS e exibir o status.
 const STATUS_MAP_DB_TO_UI = {
   pending: "Pendente",
   in_progress: "Em Progresso",
-  completed: "Concluído",
+  completed: "Concluída",
 };
 
-// Esta variável API_URL não é utilizada para `google.script.run` e pode ser removida se não for usada para chamadas fetch/XHR diretas.
-// "https://script.google.com/macros/s/AKfycbxa0l581mXMEb8gVTwy-rkCzJ7h_K35YkmBkWeRHDvJcMiBo-f5BFLCGf5SFPCyJk7P/exec";
+// Mapeamento reverso: do formato de exibição (UI) para o formato interno (DB)
+const STATUS_MAP_UI_TO_DB = {
+  Pendente: "pending",
+  "Em Progresso": "in_progress",
+  Concluída: "completed",
+};
 
-// --- Elementos do DOM ---
+// Elementos do DOM
 const messageContainer = document.getElementById("messageContainer");
 const newTaskOption = document.getElementById("newTaskOption");
 const createShoppingListOption = document.getElementById(
@@ -75,67 +78,129 @@ const defaultShoppingItems = [
   "Saco de lixo",
 ];
 
-// --- Funções Auxiliares de UI ---
-
-/**
- * Exibe uma mensagem de sucesso ou erro na interface.
- * @param {string} msg A mensagem a ser exibida.
- * @param {string} type O tipo de mensagem ('success' ou 'error').
- */
+// Função para exibir mensagens
 function showMessage(msg, type) {
   messageContainer.textContent = msg;
   messageContainer.className = `message ${type}`;
-  messageContainer.style.display = "block"; // Mostra a mensagem
+  messageContainer.style.display = "block";
   setTimeout(() => {
-    messageContainer.style.display = "none"; // Oculta após 5 segundos
+    messageContainer.style.display = "none";
   }, 5000);
 }
 
-// --- Funções de Interação com o Servidor (Apps Script) ---
-
-/**
- * Busca todas as tarefas do servidor (Planilha Google) e as renderiza na UI.
- */
-async function fetchAndRenderTasks() {
-  taskList.innerHTML = "<li>Carregando tarefas...</li>"; // Mensagem de carregamento
-  try {
-    // Chama a função 'fetchTasks' no Code.gs
-    await google.script.run
-      .withSuccessHandler(renderTasks) // Função de sucesso: renderiza as tarefas
-      .withFailureHandler(function (error) {
-        // Função de falha: exibe erro
-        console.error("Erro ao buscar tarefas:", error);
-        showMessage(`Erro ao carregar tarefas: ${error.message}`, "error");
-        taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
-      })
-      .fetchTasks(); // Executa a função do lado do servidor
-  } catch (error) {
-    showMessage("Erro de conexão ao carregar tarefas.", "error");
-    taskList.innerHTML = "<li>Erro de conexão ao carregar tarefas.</li>";
-    console.error("Erro ao chamar fetchTasks:", error);
+// Renderiza a lista de tarefas na interface
+function renderTasks(tasks) {
+  taskList.innerHTML = "";
+  if (tasks.length === 0) {
+    taskList.innerHTML = "<li>Nenhuma tarefa cadastrada.</li>";
+    return;
   }
+
+  tasks.forEach((task) => {
+    const li = document.createElement("li");
+    li.dataset.id = task.id;
+
+    const statusClassKey = Object.keys(STATUS_MAP_DB_TO_UI).find(
+      (key) => STATUS_MAP_DB_TO_UI[key] === task.status
+    );
+    li.classList.add(`status-${statusClassKey || "unknown"}`);
+
+    li.innerHTML = `
+      <span class="task-title">${task.title}</span>
+      ${
+        task.description
+          ? `<p class="task-description">${task.description}</p>`
+          : ""
+      }
+      <div class="task-actions">
+        <span class="task-status">${task.status}</span>
+        <select class="status-selector">
+          <option value="Pendente" ${
+            task.status === "Pendente" ? "selected" : ""
+          }>Pendente</option>
+          <option value="Em Progresso" ${
+            task.status === "Em Progresso" ? "selected" : ""
+          }>Em Progresso</option>
+          <option value="Concluída" ${
+            task.status === "Concluída" ? "selected" : ""
+          }>Concluída</option>
+        </select>
+        <button class="update-status-btn primary-button">Atualizar Status</button>
+        <button class="edit-btn edit-button">Editar</button>
+        <button class="delete-btn delete-button">Excluir</button>
+      </div>
+    `;
+    taskList.appendChild(li);
+  });
 }
 
-/**
- * Adiciona uma nova tarefa ao servidor (Planilha Google).
- * @param {object} taskData Objeto com os dados da tarefa (title, description, status - em UI/português).
- */
+// Gera os checkboxes da lista de compras
+function generateShoppingCheckboxes() {
+  shoppingListCheckboxes.innerHTML = "";
+  defaultShoppingItems.forEach((item, index) => {
+    const label = document.createElement("label");
+    label.innerHTML = `
+      <input type="checkbox" id="item${index}" value="${item}">
+      ${item}
+    `;
+    shoppingListCheckboxes.appendChild(label);
+  });
+}
+
+// Envio do formulário de nova tarefa
+taskForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const title = taskTitleInput.value.trim();
+  const statusUI = taskStatusSelect.value;
+  let description = taskDescriptionTextarea.value.trim();
+
+  if (!title) {
+    showMessage("O título da tarefa é obrigatório.", "error");
+    return;
+  }
+
+  if (createShoppingListOption.checked) {
+    const selectedItems = Array.from(
+      shoppingListCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
+    ).map((checkbox) => `- ${checkbox.value}`);
+    description = selectedItems.join("\n");
+
+    if (selectedItems.length === 0) {
+      showMessage(
+        "Selecione pelo menos um item para a lista de compras.",
+        "error"
+      );
+      return;
+    }
+
+    taskTitleInput.value = "Lista de Compras";
+  }
+
+  const taskData = {
+    title: title,
+    description: description,
+    status: statusUI,
+  };
+
+  await addTaskToSheet(taskData);
+});
+
+// Adiciona uma nova tarefa à planilha via Apps Script
 async function addTaskToSheet(taskData) {
   try {
-    // Chama a função 'addTask' no Code.gs
     await google.script.run
-      .withSuccessHandler(function (data) {
-        console.log("Tarefa adicionada com sucesso:", data);
+      .withSuccessHandler((data) => {
         showMessage("Tarefa adicionada com sucesso!", "success");
-        taskTitleInput.value = ""; // Limpa os campos
+        taskTitleInput.value = "";
         taskDescriptionTextarea.value = "";
-        taskStatusSelect.value = "Pendente"; // Volta para o status padrão
+        taskStatusSelect.value = "Pendente";
         if (createShoppingListOption.checked) {
           generateShoppingCheckboxes();
         }
-        fetchAndRenderTasks(); // Recarrega a lista de tarefas
+        fetchAndRenderTasks();
       })
-      .withFailureHandler(function (error) {
+      .withFailureHandler((error) => {
         console.error("Erro ao adicionar tarefa:", error);
         showMessage(`Erro ao adicionar tarefa: ${error.message}`, "error");
       })
@@ -146,23 +211,36 @@ async function addTaskToSheet(taskData) {
   }
 }
 
-/**
- * Atualiza uma tarefa existente no servidor (Planilha Google).
- * @param {string} taskId O ID da tarefa a ser atualizada.
- * @param {object} updatedData Os dados atualizados da tarefa (title, description, status - em UI/português).
- */
+// Busca todas as tarefas da planilha
+async function fetchAndRenderTasks() {
+  taskList.innerHTML = "<li>Carregando tarefas...</li>";
+  try {
+    await google.script.run
+      .withSuccessHandler(renderTasks)
+      .withFailureHandler((error) => {
+        console.error("Erro ao buscar tarefas:", error);
+        showMessage(`Erro ao carregar tarefas: ${error.message}`, "error");
+        taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
+      })
+      .fetchTasks();
+  } catch (error) {
+    showMessage("Erro de conexão ao carregar tarefas.", "error");
+    taskList.innerHTML = "<li>Erro de conexão ao carregar tarefas.</li>";
+    console.error("Erro ao chamar fetchTasks:", error);
+  }
+}
+
+// Atualiza uma tarefa existente
 async function updateTaskInSheet(taskId, updatedData) {
   try {
-    // Chama a função 'updateTask' no Code.gs
     await google.script.run
-      .withSuccessHandler(function (data) {
-        console.log("Tarefa atualizada com sucesso:", data);
+      .withSuccessHandler((data) => {
         showMessage("Tarefa atualizada com sucesso!", "success");
-        updateForm.reset(); // Limpa e oculta o formulário de atualização
+        updateForm.reset();
         updateForm.style.display = "none";
-        fetchAndRenderTasks(); // Recarrega a lista de tarefas
+        fetchAndRenderTasks();
       })
-      .withFailureHandler(function (error) {
+      .withFailureHandler((error) => {
         console.error("Erro ao atualizar tarefa:", error);
         showMessage(`Erro ao atualizar tarefa: ${error.message}`, "error");
       })
@@ -173,23 +251,16 @@ async function updateTaskInSheet(taskId, updatedData) {
   }
 }
 
-/**
- * Exclui uma tarefa do servidor (Planilha Google).
- * @param {string} taskId O ID da tarefa a ser excluída.
- */
+// Exclui uma tarefa
 async function deleteTaskFromSheet(taskId) {
   try {
-    if (confirm(`Tem certeza que deseja excluir a tarefa?`)) {
-      // Confirmação antes de excluir
-      // Chama a função 'deleteTask' no Code.gs
+    if (confirm("Tem certeza que deseja excluir a tarefa?")) {
       await google.script.run
-        .withSuccessHandler(function () {
-          // A função não retorna dados, apenas sucesso/falha
-          console.log("Tarefa excluída.");
+        .withSuccessHandler(() => {
           showMessage("Tarefa excluída com sucesso!", "success");
-          fetchAndRenderTasks(); // Recarrega a lista de tarefas
+          fetchAndRenderTasks();
         })
-        .withFailureHandler(function (error) {
+        .withFailureHandler((error) => {
           console.error("Erro ao excluir tarefa:", error);
           showMessage(`Erro ao excluir tarefa: ${error.message}`, "error");
         })
@@ -201,78 +272,75 @@ async function deleteTaskFromSheet(taskId) {
   }
 }
 
-// --- Funções de Renderização e Lógica do UI ---
+// Event listener para botões de Editar, Excluir e Atualizar Status
+taskList.addEventListener("click", async (event) => {
+  const target = event.target;
+  const li = target.closest("li");
+  const taskId = li ? li.dataset.id : null;
 
-/**
- * Renderiza a lista de tarefas na interface do usuário.
- * @param {Array<object>} tasks Um array de objetos de tarefa (com status em UI/português).
- */
-function renderTasks(tasks) {
-  taskList.innerHTML = ""; // Limpa o container antes de renderizar
-  if (tasks.length === 0) {
-    taskList.innerHTML = "<li>Nenhuma tarefa cadastrada.</li>";
+  if (!taskId) return;
+
+  if (target.classList.contains("edit-btn")) {
+    try {
+      await google.script.run
+        .withSuccessHandler((task) => {
+          updateTaskIdInput.value = task.id;
+          updateTitleInput.value = task.title;
+          updateDescriptionTextarea.value = task.description || "";
+          updateStatusSelect.value = task.status;
+          updateForm.style.display = "block";
+          window.scrollTo({ top: updateForm.offsetTop, behavior: "smooth" });
+        })
+        .withFailureHandler((error) => {
+          console.error("Erro ao buscar tarefa para edição:", error);
+          showMessage(
+            `Erro ao carregar tarefa para edição: ${error.message}`,
+            "error"
+          );
+        })
+        .getTaskById(taskId);
+    } catch (error) {
+      showMessage("Erro de conexão ao carregar tarefa para edição.", "error");
+      console.error("Erro ao carregar tarefa para edição:", error);
+    }
+  } else if (target.classList.contains("delete-btn")) {
+    await deleteTaskFromSheet(taskId);
+  } else if (target.classList.contains("update-status-btn")) {
+    const newStatusUI = li.querySelector(".status-selector").value;
+    await updateTaskInSheet(taskId, { status: newStatusUI });
+  }
+});
+
+// Envio do formulário de atualização
+updateForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const id = updateTaskIdInput.value;
+  const title = updateTitleInput.value.trim();
+  const description = updateDescriptionTextarea.value.trim();
+  const statusUI = updateStatusSelect.value;
+
+  if (!title) {
+    showMessage("O título da tarefa é obrigatório para atualização.", "error");
     return;
   }
 
-  tasks.forEach((task) => {
-    const li = document.createElement("li");
-    li.dataset.id = task.id; // Define o ID da tarefa como um atributo de dado
+  const updatedData = {
+    title: title,
+    description: description,
+    status: statusUI,
+  };
 
-    const displayStatus = task.status; // O status já vem em português do servidor
+  await updateTaskInSheet(id, updatedData);
+});
 
-    // Determina a classe CSS com base no status do DB (que o servidor já mapeou para UI)
-    // Isso é para que as classes CSS como 'status-pending' funcionem.
-    const statusClassKey = Object.keys(STATUS_MAP_DB_TO_UI).find(
-      (key) => STATUS_MAP_DB_TO_UI[key] === displayStatus
-    );
-    li.classList.add(`status-${statusClassKey || "unknown"}`); // Adiciona uma classe com base no status
+// Cancelar atualização
+cancelUpdateBtn.addEventListener("click", () => {
+  updateForm.reset();
+  updateForm.style.display = "none";
+});
 
-    li.innerHTML = `
-      <span class="task-title">${task.title}</span> ${
-        task.description // Exibe a descrição se houver
-          ? `<p class="task-description">${task.description}</p>`
-          : ""
-      }
-      <div class="task-actions">
-        <span class="task-status">${displayStatus}</span>
-        <select class="status-selector">
-          <option value="Pendente" ${
-            displayStatus === "Pendente" ? "selected" : ""
-          }>Pendente</option>
-          <option value="Em Progresso" ${
-            displayStatus === "Em Progresso" ? "selected" : ""
-          }>Em Progresso</option>
-          <option value="Concluído" ${
-            displayStatus === "Concluído" ? "selected" : ""
-          }>Concluído</option>
-        </select>
-        <button class="update-status-btn primary-button">Atualizar Status</button>
-        <button class="edit-btn edit-button">Editar</button>
-        <button class="delete-btn delete-button">Excluir</button>
-      </div>
-    `;
-    taskList.appendChild(li); // Adiciona a tarefa à lista
-  });
-}
-
-/**
- * Gera checkboxes para os itens da lista de compras padrão.
- */
-function generateShoppingCheckboxes() {
-  shoppingListCheckboxes.innerHTML = ""; // Limpa antes de adicionar
-  defaultShoppingItems.forEach((item, index) => {
-    const label = document.createElement("label");
-    label.innerHTML = `
-      <input type="checkbox" id="item${index}" value="${item}">
-      ${item}
-    `;
-    shoppingListCheckboxes.appendChild(label);
-  });
-}
-
-// --- Event Listeners ---
-
-// Alternar entre formulário de nova tarefa e lista de compras
+// Alternar entre tarefa e lista de compras
 newTaskOption.addEventListener("change", () => {
   if (newTaskOption.checked) {
     addTaskFormContent.style.display = "block";
@@ -288,132 +356,18 @@ createShoppingListOption.addEventListener("change", () => {
     addTaskFormContent.style.display = "block";
     shoppingListContainer.style.display = "block";
     generateShoppingCheckboxes();
-    taskTitleInput.value = "Lista de Compras"; // Preenche o título automaticamente
+    taskTitleInput.value = "Lista de Compras";
     taskDescriptionTextarea.value = "";
     taskDescriptionTextarea.placeholder =
       "Itens selecionados aparecerão aqui...";
   }
 });
 
-// Adicionar Tarefa / Criar Lista de Compras ao enviar o formulário
-taskForm.addEventListener("submit", async (event) => {
-  event.preventDefault(); // Impede o recarregamento da página
-
-  const title = taskTitleInput.value.trim();
-  const statusUI = taskStatusSelect.value;
-  let description = taskDescriptionTextarea.value.trim();
-
-  if (!title) {
-    showMessage("O título da tarefa é obrigatório.", "error");
-    return;
-  }
-
-  // Lógica específica para lista de compras
-  if (createShoppingListOption.checked) {
-    const selectedItems = Array.from(
-      shoppingListCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
-    ).map((checkbox) => `- ${checkbox.value}`); // Formata como lista
-    description = selectedItems.join("\n"); // Une os itens com quebra de linha
-
-    if (selectedItems.length === 0) {
-      showMessage(
-        "Selecione pelo menos um item para a lista de compras.",
-        "error"
-      );
-      return;
-    }
-    taskTitleInput.value = "Lista de Compras"; // Garante que o título seja "Lista de Compras"
-  }
-
-  const taskData = {
-    title: title,
-    description: description,
-    status: statusUI, // O status é enviado em português e mapeado no servidor
-  };
-
-  await addTaskToSheet(taskData); // Chama a função para adicionar ao Apps Script
-});
-
-// Event listener para botões de Editar, Excluir e Atualizar Status na lista de tarefas
-taskList.addEventListener("click", async (event) => {
-  const target = event.target;
-  const li = target.closest("li"); // Encontra o <li> pai da ação
-  const taskId = li ? li.dataset.id : null; // Pega o ID do <li>
-
-  if (!taskId) return; // Se não encontrou o ID, não faz nada
-
-  if (target.classList.contains("edit-btn")) {
-    try {
-      // Chama a função 'getTaskById' no Code.gs para obter os detalhes da tarefa
-      await google.script.run
-        .withSuccessHandler(function (task) {
-          updateTaskIdInput.value = task.id;
-          updateTitleInput.value = task.title;
-          updateDescriptionTextarea.value = task.description || "";
-          updateStatusSelect.value = task.status; // Preenche com o status em português
-          updateForm.style.display = "block"; // Mostra o formulário de atualização
-          window.scrollTo({ top: updateForm.offsetTop, behavior: "smooth" }); // Rola para o formulário
-        })
-        .withFailureHandler(function (error) {
-          console.error("Erro ao buscar tarefa para edição:", error);
-          showMessage(
-            `Erro ao carregar tarefa para edição: ${error.message}`,
-            "error"
-          );
-        })
-        .getTaskById(taskId);
-    } catch (error) {
-      showMessage("Erro de conexão ao carregar tarefa para edição.", "error");
-      console.error("Erro ao carregar tarefa para edição:", error);
-    }
-  } else if (target.classList.contains("delete-btn")) {
-    await deleteTaskFromSheet(taskId); // Chama a função para excluir
-  } else if (target.classList.contains("update-status-btn")) {
-    // Ação para atualizar status diretamente da lista
-    const newStatusUI = li.querySelector(".status-selector").value; // Pega o novo status em português
-    await updateTaskInSheet(taskId, { status: newStatusUI }); // Chama a função para atualizar
-  }
-});
-
-// Salvar Alterações (do formulário de atualização)
-updateForm.addEventListener("submit", async (event) => {
-  event.preventDefault(); // Impede o envio padrão do formulário
-  const id = updateTaskIdInput.value;
-  const title = updateTitleInput.value.trim();
-  const description = updateDescriptionTextarea.value.trim();
-  const statusUI = updateStatusSelect.value; // Status em português
-
-  if (!title) {
-    showMessage("O título da tarefa é obrigatório para atualização.", "error");
-    return;
-  }
-
-  const updatedData = {
-    title: title,
-    description: description,
-    status: statusUI, // O status é enviado em português e mapeado no servidor
-  };
-
-  await updateTaskInSheet(id, updatedData); // Chama a função para atualizar
-});
-
-// Cancelar atualização
-cancelUpdateBtn.addEventListener("click", () => {
-  updateForm.reset(); // Limpa o formulário
-  updateForm.style.display = "none"; // Oculta o formulário
-});
-
-// --- Inicialização ---
+// Inicialização ao carregar a página
 document.addEventListener("DOMContentLoaded", () => {
-  // Chamada direta para fetchAndRenderTasks, pois google.script.run já deve estar disponível
   fetchAndRenderTasks();
-
-  generateShoppingCheckboxes(); // Gera os checkboxes da lista de compras
-  // Garante que o formulário de adicionar tarefa esteja visível por padrão
+  generateShoppingCheckboxes();
   newTaskOption.checked = true;
   addTaskFormContent.style.display = "block";
   shoppingListContainer.style.display = "none";
 });
-
-// Removido o bloco final de verificação e carregamento condicional do google.script.run,
-// pois o script.js é carregado no momento certo, e google.script.run já deve estar disponível.

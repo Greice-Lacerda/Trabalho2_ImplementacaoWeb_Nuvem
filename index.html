@@ -1,125 +1,85 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gerenciador de Tarefas</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header>
-      <div class="container">
-        <h1>Minhas Tarefas</h1>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerenciador de Tarefas</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Minhas Tarefas</h1>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="messageContainer" class="message"></div>
+
+      <div id="taskOptionContainer" class="options">
+        <label>
+          <input type="radio" id="newTaskOption" name="taskType" value="newTask" checked />
+          Digitar Nova Tarefa
+        </label>
+        <label>
+          <input type="radio" id="createShoppingListOption" name="taskType" value="shoppingList" />
+          Criar Lista de Compras
+        </label>
       </div>
-    </header>
-
-    <main>
-      <div class="container">
-        <div id="messageContainer" class="message"></div>
-
-        <div id="taskOptionContainer" class="options">
-          <label>
-            <input
-              type="radio"
-              id="newTaskOption"
-              name="taskType"
-              value="newTask"
-              checked
-            />
-            Digitar Nova Tarefa
-          </label>
-          <label>
-            <input
-              type="radio"
-              id="createShoppingListOption"
-              name="taskType"
-              value="shoppingList"
-            />
-            Criar Lista de Compras
-          </label>
-        </div>
-
-        <form id="task-form" class="form-section">
-          <div class="task-form-content" id="addTaskFormContent">
-            <input
-              type="text"
-              id="task-title"
-              placeholder="Título da Tarefa"
-              required
-            />
-            <textarea
-              id="task-description"
-              placeholder="Descrição (opcional)"
-            ></textarea>
-          </div>
-
-          <fieldset class="form-fieldset">
-            <legend>Selecione o status da tarefa:</legend>
-            <select id="task-status" class="task-form-select">
-              <option value="Pendente">Pendente</option>
-              <option value="Em Progresso">Em Progresso</option>
-              <option value="Concluído">Concluído</option>
-            </select>
-            <button type="submit" id="addTaskBtn" class="primary-button">
-              Adicionar Tarefa
-            </button>
-          </fieldset>
-        </form>
-
-        <div
-          id="shoppingListContainer"
-          class="form-section"
-          style="display: none"
-        >
+ 
+      <div v id="shoppingListContainer" class="form-section" style="display: none">
           <label>Selecione os itens para a lista de compras:</label>
           <div id="shoppingListCheckboxes" class="checkbox-list"></div>
         </div>
 
-        <form id="updateForm" class="form-section" style="display: none">
-          <h2>Atualizar Tarefa</h2>
-          <input type="hidden" id="updateTaskId" />
-          <label for="updateTitle">Título:</label>
-          <input
-            type="text"
-            id="updateTitle"
-            class="task-form-input"
-            required
-          />
+      <div id="task-form" class="form-section">
+        <div class="task-form-content" id="addTaskFormContent">
+          <input type="text" id="task-title" placeholder="Título da Tarefa" required />
+          <textarea id="task-description" placeholder="Descrição (opcional)"></textarea>
+        </div>
 
-          <label for="updateDescription">Descrição:</label>
-          <textarea
-            id="updateDescription"
-            rows="3"
-            class="task-form-input"
-          ></textarea>
-
-          <label for="updateStatus">Status:</label>
-          <select id="updateStatus" class="task-form-select">
+        <fieldset class="form-fieldset">
+          <legend>Selecione o status da tarefa:</legend>
+          <select id="task-status" class="task-form-select">
             <option value="Pendente">Pendente</option>
             <option value="Em Progresso">Em Progresso</option>
-            <option value="Concluído">Concluído</option>
+            <option value="Concluída">Concluída</option>
           </select>
+          <button type="submit" id="addTaskBtn" class="primary-button">Adicionar Tarefa</button>
+        </fieldset>
+      </form>    
 
-          <button type="submit" id="saveUpdateBtn" class="primary-button">
-            Salvar Alterações
-          </button>
-          <button type="button" id="cancelUpdate" class="secondary-button">
-            Cancelar
-          </button>
-        </form>
+      <form id="updateForm" class="form-section" style="display: none">
+        <h2>Atualizar Tarefa</h2>
+        <input type="hidden" id="updateTaskId" />
+        <label for="updateTitle">Título:</label>
+        <input type="text" id="updateTitle" class="task-form-input" required />
+        <label for="updateDescription">Descrição:</label>
+        <textarea id="updateDescription" rows="3" class="task-form-input"></textarea>
+        <label for="updateStatus">Status:</label>
+        <select id="updateStatus" class="task-form-select">
+          <option value="Pendente">Pendente</option>
+          <option value="Em Progresso">Em Progresso</option>
+          <option value="Concluída">Concluída</option>
+        </select>
+        <button type="submit" id="saveUpdateBtn" class="primary-button">Salvar Alterações</button>
+        <button type="button" id="cancelUpdate" class="secondary-button">Cancelar</button>
+      </form>
 
-        <div class="tasks-list-section">
-          <h2>Lista de Tarefas</h2>
-          <ul id="task-list" class="task-list"></ul>
-        </div>
+      <div class="tasks-list-section">
+        <h2>Lista de Tarefas</h2>
+        <ul id="task-list" class="task-list"></ul>
       </div>
-    </main>
+    </div>
+  </main>
 
-    <footer>
-      <div class="container">
-        <p>&copy; 2025 Gerenciador de Tarefas. Todos os direitos reservados.</p>
-      </div>
-    </footer>
-    <script src="script.js"></script>
-  </body>
+  <footer>
+    <div class="container">
+      <p>© 2025 Gerenciador de Tarefas. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
 </html>
