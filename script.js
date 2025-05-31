@@ -1,5 +1,5 @@
 // A URL do seu Web App. ESTA É A URL CORRETA E VERIFICADA!
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzeRAKMIyq4eNT8W7IZQ9GVKW_DP3EOhSyeRfoPapUho3IPfe07ph_yAEOsqL9QUkVT/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfPKU7ToXguj90ST4R6SxWbDuTIsj5onuRt3H-IPwmECdiEAnGZ5wek0l_fQ48QseA/exec";
 
 // Elementos do DOM
 const messageContainer = document.getElementById("messageContainer");
