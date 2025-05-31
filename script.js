@@ -7,7 +7,7 @@ const STATUS_MAP_DB_TO_UI = {
 };
 
 // Esta variável API_URL não é utilizada para `google.script.run` e pode ser removida se não for usada para chamadas fetch/XHR diretas.
-// "https://script.google.com/macros/s/AKfycbxa0l581mXMEb8gVTwy-rkCzJ7h_K35YkmBkWeRHDvJcMiBo-f5BFLCGf5SFPCyJk7P/exec";
+// "https://script.google.com/macros/s/AKfycbyP_ZSwIiGfilgDAzzCQP1EDd5NKbEtkkyOYl1uEtM5VDOchsZJk5NiBpFN6L7cVi4A/exec";
 
 // --- Elementos do DOM ---
 const messageContainer = document.getElementById("messageContainer");
