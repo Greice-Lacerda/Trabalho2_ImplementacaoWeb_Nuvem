@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gerenciador de Tarefas</title>
     <link rel="stylesheet" href="style.css" />
-    <script src="script.js"></script>
   </head>
   <body>
     <header>
@@ -18,7 +17,7 @@
       <div class="container">
         <div id="messageContainer" class="message"></div>
 
-        <div id="taskOptionContainer" style="margin-bottom: 20px">
+        <div id="taskOptionContainer" class="options">
           <label>
             <input
               type="radio"
@@ -29,7 +28,7 @@
             />
             Digitar Nova Tarefa
           </label>
-          <label style="margin-left: 20px">
+          <label>
             <input
               type="radio"
               id="createShoppingListOption"
@@ -40,56 +39,56 @@
           </label>
         </div>
 
-        <div class="task-form" id="addTaskFormContent">
-          <input
-            type="text"
-            id="taskTitle"
-            placeholder="Título da Tarefa"
-            required
-          />
-          <textarea
-            id="taskDescription"
-            placeholder="Descrição (opcional)"
-          ></textarea>
-        </div>
+        <form id="task-form" class="form-section">
+          <div class="task-form-content" id="addTaskFormContent">
+            <input
+              type="text"
+              id="task-title"
+              placeholder="Título da Tarefa"
+              required
+            />
+            <textarea
+              id="task-description"
+              placeholder="Descrição (opcional)"
+            ></textarea>
+          </div>
 
-        <div id="shoppingListContainer" style="display: none">
+          <fieldset class="form-fieldset">
+            <legend>Selecione o status da tarefa:</legend>
+            <select id="task-status" class="task-form-select">
+              <option value="Pendente">Pendente</option>
+              <option value="Em Progresso">Em Progresso</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+            <button type="submit" id="addTaskBtn" class="primary-button">
+              Adicionar Tarefa
+            </button>
+          </fieldset>
+        </form>
+
+        <div
+          id="shoppingListContainer"
+          class="form-section"
+          style="display: none"
+        >
           <label>Selecione os itens para a lista de compras:</label>
           <div id="shoppingListCheckboxes" class="checkbox-list"></div>
         </div>
 
-        <fieldset>
-          <legend>Selecione o status da tarefa:</legend>
-          <select
-            id="taskStatus"
-            style="
-              width: 100%;
-              padding: 15px;
-              border: 2px solid #ddd;
-              border-radius: 4px;
-              font-size: 20px;
-              color: blue;
-              font-style: bold;
-              margin-bottom: 10px;
-              box-shadow: rgb(13, 13, 13) 4px 4px 5px; /* Sombra para o botão */
-            "
-          >
-            <option value="Pendente">Pendente</option>
-            <option value="Em Progresso">Em Progresso</option>
-            <option value="Concluído">Concluído</option>
-          </select>
-          <button id="addTaskBtn">Adicionar Tarefa</button>
-        </fieldset>
-
-        <form id="updateForm" style="display: none">
+        <form id="updateForm" class="form-section" style="display: none">
           <h2>Atualizar Tarefa</h2>
           <input type="hidden" id="updateTaskId" />
-          <label for="updateTitulo">Título:</label>
-          <input type="text" id="updateTitulo" class="task-form-input" />
+          <label for="updateTitle">Título:</label>
+          <input
+            type="text"
+            id="updateTitle"
+            class="task-form-input"
+            required
+          />
 
-          <label for="updateDescricao">Descrição:</label>
+          <label for="updateDescription">Descrição:</label>
           <textarea
-            id="updateDescricao"
+            id="updateDescription"
             rows="3"
             class="task-form-input"
           ></textarea>
@@ -101,15 +100,17 @@
             <option value="Concluído">Concluído</option>
           </select>
 
-          <button type="submit" id="saveUpdateBtn">Salvar Alterações</button>
-          <button type="button" id="cancelUpdate">Cancelar</button>
+          <button type="submit" id="saveUpdateBtn" class="primary-button">
+            Salvar Alterações
+          </button>
+          <button type="button" id="cancelUpdate" class="secondary-button">
+            Cancelar
+          </button>
         </form>
 
-        <div class="tasks-list">
+        <div class="tasks-list-section">
           <h2>Lista de Tarefas</h2>
-          <ul id="tasksContainer">
-            <li>Carregando tarefas...</li>
-          </ul>
+          <ul id="task-list" class="task-list"></ul>
         </div>
       </div>
     </main>
@@ -120,6 +121,58 @@
       </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+      // Função para carregar a API do Apps Script de forma assíncrona
+      function loadAppsScriptAPI(url) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = url;
+          script.onload = () => {
+            if (
+              typeof google !== "undefined" &&
+              google.script &&
+              google.script.run
+            ) {
+              resolve();
+            } else {
+              reject(
+                new Error(
+                  "google.script.run não está disponível após carregar o script."
+                )
+              );
+            }
+          };
+          script.onerror = () =>
+            reject(new Error("Falha ao carregar o script do Apps Script."));
+          document.head.appendChild(script);
+        });
+      }
+
+      // IMPORTANTE: SUBSTITUA ESTE URL PELA URL DO SEU GOOGLE APPS SCRIPT WEB APP
+      // VOCÊ OBTERÁ ESTE URL APÓS IMPLANTAR SEU PROJETO APPS SCRIPT (ver passo 5 abaixo)
+      const APPS_SCRIPT_WEB_APP_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"; // Ex: https://script.google.com/macros/s/AKfyc.../exec
+
+      // Carrega o script do Apps Script ANTES do seu script principal
+      // para garantir que google.script.run esteja disponível.
+      loadAppsScriptAPI(APPS_SCRIPT_WEB_APP_URL)
+        .then(() => {
+          console.log("API do Apps Script carregada com sucesso.");
+          // Agora, carregue o seu script.js
+          const mainScript = document.createElement("script");
+          mainScript.src = "script.js";
+          document.body.appendChild(mainScript);
+        })
+        .catch((error) => {
+          console.error("Erro ao inicializar o Apps Script API:", error);
+          // Opcional: Mostrar uma mensagem de erro na UI
+          document.getElementById(
+            "messageContainer"
+          ).textContent = `Erro crítico: Falha ao carregar o serviço do Apps Script (${error.message}). Por favor, verifique a URL e a implantação.`;
+          document.getElementById("messageContainer").className =
+            "message error";
+          document.getElementById("messageContainer").style.display = "block";
+        });
+    </script>
   </body>
 </html>
