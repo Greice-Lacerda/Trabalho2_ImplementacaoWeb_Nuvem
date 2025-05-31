@@ -1,12 +1,12 @@
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbyjTyhky655mPaT5FMv8D8EJfhSHaFPJIkt4DNPYtq_Kmmw696LGDyoC5oleO8-0eml/exec";
+
 // Mapeamento de status: do formato interno (DB) para o formato de exibição (UI)
 const STATUS_MAP_DB_TO_UI = {
   pending: "Pendente",
   in_progress: "Em Progresso",
   completed: "Concluída",
 };
-
-// Esta variável API_URL não é utilizada para `google.script.run` e pode ser removida se não for usada para chamadas fetch/XHR diretas.
-// "https://script.google.com/macros/s/AKfycbxa0l581mXMEb8gVTwy-rkCzJ7h_K35YkmBkWeRHDvJcMiBo-f5BFLCGf5SFPCyJk7P/exec";
 
 // Elementos do DOM
 const messageContainer = document.getElementById("messageContainer");
@@ -92,20 +92,18 @@ function showMessage(msg, type) {
 async function fetchAndRenderTasks() {
   taskList.innerHTML = "<li>Carregando tarefas...</li>"; // Mensagem de carregamento
   try {
-    // Chama a função 'fetchTasks' no Code.gs
-    await google.script.run
-      .withSuccessHandler(renderTasks) // Função de sucesso: renderiza as tarefas
-      .withFailureHandler(function (error) {
-        // Função de falha: exibe erro
-        console.error("Erro ao buscar tarefas:", error);
-        showMessage(`Erro ao carregar tarefas: ${error.message}`, "error");
-        taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
-      })
-      .fetchTasks(); // Executa a função do lado do servidor
+    const response = await fetch(`${API_URL}?action=fetchTasks`);
+    const tasks = await response.json();
+    if (tasks.error) {
+      showMessage(`Erro: ${tasks.error}`, "error");
+      taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
+    } else {
+      renderTasks(tasks);
+    }
   } catch (error) {
     showMessage("Erro de conexão ao carregar tarefas.", "error");
     taskList.innerHTML = "<li>Erro de conexão ao carregar tarefas.</li>";
-    console.error("Erro ao chamar fetchTasks:", error);
+    console.error("Erro ao buscar tarefas:", error);
   }
 }
 
@@ -115,27 +113,32 @@ async function fetchAndRenderTasks() {
  */
 async function addTaskToSheet(taskData) {
   try {
-    // Chama a função 'addTask' no Code.gs
-    await google.script.run
-      .withSuccessHandler(function (data) {
-        console.log("Tarefa adicionada com sucesso:", data);
-        showMessage("Tarefa adicionada com sucesso!", "success");
-        taskTitleInput.value = ""; // Limpa os campos
-        taskDescriptionTextarea.value = "";
-        taskStatusSelect.value = "Pendente"; // Volta para o status padrão
-        if (createShoppingListOption.checked) {
-          generateShoppingCheckboxes();
-        }
-        fetchAndRenderTasks(); // Recarrega a lista de tarefas
-      })
-      .withFailureHandler(function (error) {
-        console.error("Erro ao adicionar tarefa:", error);
-        showMessage(`Erro ao adicionar tarefa: ${error.message}`, "error");
-      })
-      .addTask(taskData);
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "addTask",
+        taskData: taskData,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    if (result.error) {
+      showMessage(`Erro ao adicionar tarefa: ${result.error}`, "error");
+    } else {
+      showMessage("Tarefa adicionada com sucesso!", "success");
+      taskTitleInput.value = "";
+      taskDescriptionTextarea.value = "";
+      taskStatusSelect.value = "Pendente";
+      if (createShoppingListOption.checked) {
+        generateShoppingCheckboxes();
+      }
+      fetchAndRenderTasks();
+    }
   } catch (error) {
     showMessage("Erro de conexão ao adicionar tarefa.", "error");
-    console.error("Erro ao chamar addTask:", error);
+    console.error("Erro ao adicionar tarefa:", error);
   }
 }
 
@@ -146,23 +149,29 @@ async function addTaskToSheet(taskData) {
  */
 async function updateTaskInSheet(taskId, updatedData) {
   try {
-    // Chama a função 'updateTask' no Code.gs
-    await google.script.run
-      .withSuccessHandler(function (data) {
-        console.log("Tarefa atualizada com sucesso:", data);
-        showMessage("Tarefa atualizada com sucesso!", "success");
-        updateForm.reset(); // Limpa e oculta o formulário de atualização
-        updateForm.style.display = "none";
-        fetchAndRenderTasks(); // Recarrega a lista de tarefas
-      })
-      .withFailureHandler(function (error) {
-        console.error("Erro ao atualizar tarefa:", error);
-        showMessage(`Erro ao atualizar tarefa: ${error.message}`, "error");
-      })
-      .updateTask(taskId, updatedData);
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "updateTask",
+        id: taskId,
+        updatedData: updatedData,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    if (result.error) {
+      showMessage(`Erro ao atualizar tarefa: ${result.error}`, "error");
+    } else {
+      showMessage("Tarefa atualizada com sucesso!", "success");
+      updateForm.reset();
+      updateForm.style.display = "none";
+      fetchAndRenderTasks();
+    }
   } catch (error) {
     showMessage("Erro de conexão ao atualizar tarefa.", "error");
-    console.error("Erro ao chamar updateTask:", error);
+    console.error("Erro ao atualizar tarefa:", error);
   }
 }
 
@@ -172,25 +181,55 @@ async function updateTaskInSheet(taskId, updatedData) {
  */
 async function deleteTaskFromSheet(taskId) {
   try {
-    if (confirm(`Tem certeza que deseja excluir a tarefa?`)) {
-      // Confirmação antes de excluir
-      // Chama a função 'deleteTask' no Code.gs
-      await google.script.run
-        .withSuccessHandler(function () {
-          // A função não retorna dados, apenas sucesso/falha
-          console.log("Tarefa excluída.");
-          showMessage("Tarefa excluída com sucesso!", "success");
-          fetchAndRenderTasks(); // Recarrega a lista de tarefas
-        })
-        .withFailureHandler(function (error) {
-          console.error("Erro ao excluir tarefa:", error);
-          showMessage(`Erro ao excluir tarefa: ${error.message}`, "error");
-        })
-        .deleteTask(taskId);
+    if (confirm("Tem certeza que deseja excluir a tarefa?")) {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "deleteTask",
+          ID: taskId,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+      if (result.error) {
+        showMessage(`Erro ao excluir tarefa: ${result.error}`, "error");
+      } else {
+        showMessage("Tarefa excluída com sucesso!", "success");
+        fetchAndRenderTasks();
+      }
     }
   } catch (error) {
     showMessage("Erro de conexão ao excluir tarefa.", "error");
-    console.error("Erro ao chamar deleteTask:", error);
+    console.error("Erro ao excluir tarefa:", error);
+  }
+}
+
+/**
+ * Buscar tarefa por ID (para edição)
+ * @param {string} taskId O ID da tarefa a ser buscada.
+ */
+async function getTaskById(taskId) {
+  try {
+    const response = await fetch(`${API_URL}?action=getTaskById&ID=${taskId}`);
+    const task = await response.json();
+    if (task.error) {
+      showMessage(
+        `Erro ao carregar tarefa para edição: ${task.error}`,
+        "error"
+      );
+    } else {
+      updateTaskIdInput.value = task.id;
+      updateTitleInput.value = task.titulo;
+      updateDescriptionTextarea.value = task.descricao || "";
+      updateStatusSelect.value = task.status;
+      updateForm.style.display = "block";
+      window.scrollTo({ top: updateForm.offsetTop, behavior: "smooth" });
+    }
+  } catch (error) {
+    showMessage("Erro de conexão ao carregar tarefa para edição.", "error");
+    console.error("Erro ao carregar tarefa para edição:", error);
   }
 }
 
@@ -217,10 +256,10 @@ function renderTasks(tasks) {
     li.classList.add(`status-${statusClassKey || "unknown"}`);
 
     li.innerHTML = `
-      <span class="task-title">${task.title}</span>
+      <span class="task-title">${task.titulo}</span>
       ${
-        task.description
-          ? `<p class="task-description">${task.description}</p>`
+        task.descricao
+          ? `<p class="task-description">${task.descricao}</p>`
           : ""
       }
       <div class="task-actions">
@@ -289,99 +328,13 @@ taskForm.addEventListener("submit", async (event) => {
   }
 
   const taskData = {
-    title: title,
-    description: description,
+    titulo: title,
+    descricao: description,
     status: statusUI,
   };
 
   await addTaskToSheet(taskData);
 });
-
-// Adiciona uma nova tarefa à planilha via Apps Script
-async function addTaskToSheet(taskData) {
-  try {
-    await google.script.run
-      .withSuccessHandler((data) => {
-        showMessage("Tarefa adicionada com sucesso!", "success");
-        taskTitleInput.value = "";
-        taskDescriptionTextarea.value = "";
-        taskStatusSelect.value = "Pendente";
-        if (createShoppingListOption.checked) {
-          generateShoppingCheckboxes();
-        }
-        fetchAndRenderTasks();
-      })
-      .withFailureHandler((error) => {
-        console.error("Erro ao adicionar tarefa:", error);
-        showMessage(`Erro ao adicionar tarefa: ${error.message}`, "error");
-      })
-      .addTask(taskData);
-  } catch (error) {
-    showMessage("Erro de conexão ao adicionar tarefa.", "error");
-    console.error("Erro ao chamar addTask:", error);
-  }
-}
-
-// Busca todas as tarefas da planilha
-async function fetchAndRenderTasks() {
-  taskList.innerHTML = "<li>Carregando tarefas...</li>";
-  try {
-    await google.script.run
-      .withSuccessHandler(renderTasks)
-      .withFailureHandler((error) => {
-        console.error("Erro ao buscar tarefas:", error);
-        showMessage(`Erro ao carregar tarefas: ${error.message}`, "error");
-        taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
-      })
-      .fetchTasks();
-  } catch (error) {
-    showMessage("Erro de conexão ao carregar tarefas.", "error");
-    taskList.innerHTML = "<li>Erro de conexão ao carregar tarefas.</li>";
-    console.error("Erro ao chamar fetchTasks:", error);
-  }
-}
-
-// Atualiza uma tarefa existente
-async function updateTaskInSheet(taskId, updatedData) {
-  try {
-    await google.script.run
-      .withSuccessHandler((data) => {
-        showMessage("Tarefa atualizada com sucesso!", "success");
-        updateForm.reset();
-        updateForm.style.display = "none";
-        fetchAndRenderTasks();
-      })
-      .withFailureHandler((error) => {
-        console.error("Erro ao atualizar tarefa:", error);
-        showMessage(`Erro ao atualizar tarefa: ${error.message}`, "error");
-      })
-      .updateTask(taskId, updatedData);
-  } catch (error) {
-    showMessage("Erro de conexão ao atualizar tarefa.", "error");
-    console.error("Erro ao chamar updateTask:", error);
-  }
-}
-
-// Exclui uma tarefa
-async function deleteTaskFromSheet(taskId) {
-  try {
-    if (confirm("Tem certeza que deseja excluir a tarefa?")) {
-      await google.script.run
-        .withSuccessHandler(() => {
-          showMessage("Tarefa excluída com sucesso!", "success");
-          fetchAndRenderTasks();
-        })
-        .withFailureHandler((error) => {
-          console.error("Erro ao excluir tarefa:", error);
-          showMessage(`Erro ao excluir tarefa: ${error.message}`, "error");
-        })
-        .deleteTask(taskId);
-    }
-  } catch (error) {
-    showMessage("Erro de conexão ao excluir tarefa.", "error");
-    console.error("Erro ao chamar deleteTask:", error);
-  }
-}
 
 // Event listener para botões de Editar, Excluir e Atualizar Status
 taskList.addEventListener("click", async (event) => {
@@ -392,28 +345,7 @@ taskList.addEventListener("click", async (event) => {
   if (!taskId) return;
 
   if (target.classList.contains("edit-btn")) {
-    try {
-      await google.script.run
-        .withSuccessHandler((task) => {
-          updateTaskIdInput.value = task.id;
-          updateTitleInput.value = task.title;
-          updateDescriptionTextarea.value = task.description || "";
-          updateStatusSelect.value = task.status;
-          updateForm.style.display = "block";
-          window.scrollTo({ top: updateForm.offsetTop, behavior: "smooth" });
-        })
-        .withFailureHandler((error) => {
-          console.error("Erro ao buscar tarefa para edição:", error);
-          showMessage(
-            `Erro ao carregar tarefa para edição: ${error.message}`,
-            "error"
-          );
-        })
-        .getTaskById(taskId);
-    } catch (error) {
-      showMessage("Erro de conexão ao carregar tarefa para edição.", "error");
-      console.error("Erro ao carregar tarefa para edição:", error);
-    }
+    await getTaskById(taskId);
   } else if (target.classList.contains("delete-btn")) {
     await deleteTaskFromSheet(taskId);
   } else if (target.classList.contains("update-status-btn")) {
@@ -437,8 +369,8 @@ updateForm.addEventListener("submit", async (event) => {
   }
 
   const updatedData = {
-    title: title,
-    description: description,
+    titulo: title,
+    descricao: description,
     status: statusUI,
   };
 
@@ -482,6 +414,3 @@ document.addEventListener("DOMContentLoaded", () => {
   addTaskFormContent.style.display = "block";
   shoppingListContainer.style.display = "none";
 });
-
-// Removido o bloco final de verificação e carregamento condicional do google.script.run,
-// pois o script.js é carregado no momento certo, e google.script.run já deve estar disponível.

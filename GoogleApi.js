@@ -1,271 +1,200 @@
-const SPREADSHEET_ID = "1FPYvCbbp-V3D9-sn98ftrfreJXdnn0IYFSxmzmy6-nI"; // Seu ID de Planilha
-const SHEET_NAME = "Tarefas"; // Nome da aba na planilha onde as tarefas estão
-const HEADERS = ["id", "title", "description", "status"]; // <<<<<< Definição dos cabeçalhos AQUI
 
-// Função auxiliar para obter a planilha e a aba de tarefas
+const SPREADSHEET_ID = "1FPYvCbbp-V3D9-sn98ftrfreJXdnn0IYFSxmzmy6-nI";
+const SHEET_NAME = "Tarefas";
+const HEADERS = ["ID", "Titulo", "Descricao", "Status", "Data"];
+
+// Mapeamentos de status
+const STATUS_MAP_UI_TO_DB = {
+  "Pendente": "pending",
+  "Em Progresso": "in_progress",
+  "Concluída": "completed",
+};
+
+const STATUS_MAP_DB_TO_UI = {
+  "pending": "Pendente",
+  "in_progress": "Em Progresso",
+  "completed": "Concluída",
+};
+
+// Utilitários
 function getSheet() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   return ss.getSheetByName(SHEET_NAME);
 }
 
-// Mapeamento de status: do formato de exibição (UI) para o formato interno (DB)
-const STATUS_MAP_UI_TO_DB = {
-  "Pendente": "pending",
-  "Em Progresso": "in_progress",
-  "Concluído": "completed",
-};
-
-// Mapeamento de status: do formato interno (DB) para o formato de exibição (UI)
-const STATUS_MAP_DB_TO_UI = {
-  "pending": "Pendente",
-  "in_progress": "Em Progresso",
-  "completed": "Concluído",
-};
-
-// --- Funções de API REST (chamadas pelo frontend) ---
-
-/**
- * Função principal para lidar com requisições GET (ex: buscar todas as tarefas).
- */
-function doGet(e) {
-  // Rota para buscar todas as tarefas
-  if (e.parameter.action == "fetchTasks") {
-    const tasks = fetchTasksInternal(); // Chama a função interna para buscar tarefas
-    return ContentService.createTextOutput(JSON.stringify(tasks)).setMimeType(ContentService.MimeType.JSON);
-  }
-  // Rota para buscar uma tarefa por ID
-  if (e.parameter.action == "getTaskById" && e.parameter.id) {
-    const task = getTaskByIdInternal(e.parameter.id);
-    if (task) {
-      return ContentService.createTextOutput(JSON.stringify(task)).setMimeType(ContentService.MimeType.JSON);
-    } else {
-      // Ajuste: setStatusCode(404) para indicar que não foi encontrada
-      return ContentService.createTextOutput(JSON.stringify({ error: "Tarefa não encontrada" }))
-                           .setMimeType(ContentService.MimeType.JSON)
-                           .setStatusCode(404);
-    }
-  }
-
-  // Resposta padrão para rotas não reconhecidas
-  return ContentService.createTextOutput(JSON.stringify({ message: "Método GET não suportado ou ação inválida." }))
-                       .setMimeType(ContentService.MimeType.JSON)
-                       .setStatusCode(400); // Bad Request
+function getNextAvailableId(data) {
+  if (!Array.isArray(data) || data.length === 0) return 1;
+  const ids = data.slice(1).map(row => Number(row[0])).filter(n => !isNaN(n));
+  let ID = 1;
+  while (ids.includes(ID)) ID++;
+  return ID;
 }
 
-/**
- * Função principal para lidar com requisições POST (ex: adicionar, atualizar, excluir).
- */
+// API GET
+function doGet(e) {
+  const action = e.parameter.action;
+  if (action === "fetchTasks") {
+    const tasks = fetchTasksInternal();
+    return ContentService.createTextOutput(JSON.stringify(tasks)).setMimeType(ContentService.MimeType.JSON);
+  }
+  if (action === "getTaskById" && e.parameter.ID) {
+    const task = getTaskByIdInternal(e.parameter.ID);
+    return ContentService.createTextOutput(JSON.stringify(task || { error: "Tarefa não encontrada" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ error: "Ação inválida." }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// API POST
 function doPost(e) {
-  let requestBody;
+  let body;
   try {
-    requestBody = JSON.parse(e.postData.contents);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ error: "Corpo da requisição JSON inválido." }))
-                         .setMimeType(ContentService.MimeType.JSON)
-                         .setStatusCode(400); // Bad Request
+    body = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "JSON inválido." }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 
-  const action = requestBody.action;
-
+  const action = body.action;
   try {
-    if (action == "addTask") {
-      const result = addTaskInternal(requestBody.taskData);
+    if (action === "addTask") {
+      Logger.log(body.taskData); // Corrigido aqui
+      const result = addTaskInternal(body.taskData);
       return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
-    } else if (action == "updateTask") {
-      const result = updateTaskInternal(requestBody.id, requestBody.updatedData);
-      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
-    } else if (action == "deleteTask") {
-      const result = deleteTaskInternal(requestBody.id);
-      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
-    } else {
-      return ContentService.createTextOutput(JSON.stringify({ error: "Ação inválida para POST." }))
-                           .setMimeType(ContentService.MimeType.JSON)
-                           .setStatusCode(400); // Bad Request
     }
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ error: error.message || "Erro interno do servidor." }))
-                         .setMimeType(ContentService.MimeType.JSON)
-                         .setStatusCode(500); // Internal Server Error
-  }
-}
-
-// --- Funções Internas de Lógica (que antes eram chamadas diretamente por google.script.run) ---
-
-/**
- * Busca todas as tarefas da planilha.
- * Retorna um array de objetos de tarefa com status mapeado para UI (português).
- */
-function doGet(e) {
-  if (e.parameter.action == "fetchTasks") {
-    const tasks = fetchTasksInternal(); // Busca as tarefas da planilha
-    return ContentService.createTextOutput(JSON.stringify(tasks)).setMimeType(ContentService.MimeType.JSON);
+    if (action === "updateTask") {
+      const result = updateTaskInternal(body.id, body.updatedData);
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    }
+    if (action === "deleteTask") {
+      const result = deleteTaskInternal(body.ID);
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 
   return ContentService.createTextOutput(JSON.stringify({ error: "Ação inválida." }))
-                       .setMimeType(ContentService.MimeType.JSON)
-                       .setStatusCode(400);
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
-
-/**
- * Adiciona uma nova tarefa à planilha.
- * @param {object} taskData Objeto com os dados da tarefa (title, description, status - em UI/português).
- * @returns {object} A tarefa adicionada com ID.
- */
-function addTaskInternal(taskData) {
+// Funções internas
+function fetchTasksInternal() {
   const sheet = getSheet();
-  const newId = Utilities.getUuid(); // Gera um ID único
-  const statusDB = STATUS_MAP_UI_TO_DB[taskData.status] || "pending"; // Mapeia para formato DB
+  const data = sheet.getDataRange().getValues();
+  const tasks = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    tasks.push({
+      id: row[0],
+      titulo: row[1],
+      descricao: row[2],
+      status: STATUS_MAP_DB_TO_UI[row[3]] || row[3],
+      data: row[4],
+    });
+  }
+
+  return tasks;
+}
+
+function getTaskByIdInternal(ID) {
+  const sheet = getSheet();
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(ID)) {
+      return {
+        id: data[i][0],
+        titulo: data[i][1],
+        descricao: data[i][2],
+        status: STATUS_MAP_DB_TO_UI[data[i][3]] || data[i][3],
+        data: data[i][4],
+      };
+    }
+  }
+
+  return null;
+}
+
+function addTaskInternal(taskData) {
+  if (!taskData || !taskData.titulo) {
+    throw new Error("Dados da tarefa inválidos.");
+  }
+
+  const sheet = getSheet();
+  const data = sheet.getDataRange().getValues();
+  const newId = getNextAvailableId(data);
+  const statusDB = STATUS_MAP_UI_TO_DB[taskData.status] || "pending";
+  const dataCriacao = new Date().toISOString();
 
   const newRow = [
     newId,
-    taskData.title,
-    taskData.description || "",
+    taskData.titulo,
+    taskData.descricao || "",
     statusDB,
+    dataCriacao,
   ];
   sheet.appendRow(newRow);
 
-  const addedTask = {
+  return {
     id: newId,
-    title: taskData.title,
-    description: taskData.description || "",
-    status: taskData.status, // Retorna status em português para o frontend
+    titulo: taskData.titulo,
+    descricao: taskData.descricao || "",
+    status: taskData.status || "Pendente",
+    data: dataCriacao,
   };
-  return addedTask;
 }
 
-/**
- * Busca uma tarefa pelo ID.
- * @param {string} id O ID da tarefa.
- * @returns {object|null} O objeto da tarefa ou null se não for encontrada.
- */
-function getTaskByIdInternal(id) {
-  const sheet = getSheet();
-  const data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return null;
-
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === id) { // ID está na primeira coluna (índice 0)
-      const task = {};
-      for (let j = 0; j < HEADERS.length; j++) {
-        task[HEADERS[j]] = data[i][j];
-      }
-      task.status = STATUS_MAP_DB_TO_UI[task.status] || task.status;
-      return task;
-    }
-  }
-  return null;
-}
-
-/**
- * Atualiza uma tarefa na planilha.
- * @param {string} taskId O ID da tarefa a ser atualizada.
- * @param {object} updatedData Os dados atualizados (title, description, status - em UI/português).
- * @returns {object|null} A tarefa atualizada ou null se não encontrada.
- */
 function updateTaskInternal(taskId, updatedData) {
   const sheet = getSheet();
   const data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return null;
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === taskId) {
-      const rowToUpdate = data[i];
-      let updatedStatusDB = rowToUpdate[HEADERS.indexOf("status")]; // Mantém o status atual por padrão
-
-      if (updatedData.title !== undefined) {
-        rowToUpdate[HEADERS.indexOf("title")] = updatedData.title;
-      }
-      if (updatedData.description !== undefined) {
-        rowToUpdate[HEADERS.indexOf("description")] = updatedData.description;
-      }
+    if (String(data[i][0]) === String(taskId)) {
+      if (updatedData.titulo !== undefined) data[i][1] = updatedData.titulo;
+      if (updatedData.descricao !== undefined) data[i][2] = updatedData.descricao;
       if (updatedData.status !== undefined) {
-        updatedStatusDB = STATUS_MAP_UI_TO_DB[updatedData.status] || updatedData.status;
-        rowToUpdate[HEADERS.indexOf("status")] = updatedStatusDB;
+        data[i][3] = STATUS_MAP_UI_TO_DB[updatedData.status] || updatedData.status;
       }
 
-      sheet.getRange(i + 1, 1, 1, rowToUpdate.length).setValues([rowToUpdate]);
+      sheet.getRange(i + 1, 1, 1, data[i].length).setValues([data[i]]);
 
-      const updatedTask = {};
-      for (let j = 0; j < HEADERS.length; j++) {
-        updatedTask[HEADERS[j]] = rowToUpdate[j];
-      }
-      updatedTask.status = STATUS_MAP_DB_TO_UI[updatedTask.status] || updatedTask.status;
-      return updatedTask;
+      return {
+        id: data[i][0],
+        titulo: data[i][1],
+        descricao: data[i][2],
+        status: STATUS_MAP_DB_TO_UI[data[i][3]] || data[i][3],
+        data: data[i][4],
+      };
     }
   }
+
   return null;
 }
 
-/**
- * Exclui uma tarefa da planilha.
- * @param {string} taskId O ID da tarefa a ser excluída.
- * @returns {boolean} True se a tarefa foi excluída, false caso contrário.
- */
 function deleteTaskInternal(taskId) {
   const sheet = getSheet();
   const data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return false;
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === taskId) {
-      sheet.deleteRow(i + 1); // +1 porque as linhas da planilha são 1-indexed
+    if (String(data[i][0]) === String(taskId)) {
+      sheet.deleteRow(i + 1);
       return true;
     }
   }
+
   return false;
 }
 
-// --- Funções Auxiliares para o Editor (Opcionais) ---
-
-// Função para criar a planilha e o cabeçalho se não existirem
+// Inicialização da planilha
 function setupSheet() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(HEADERS);
-    // Definir as cores para os status (opcional, para visualização na planilha)
-    const statusColumnIndex = HEADERS.indexOf("status") + 1; // Coluna do status
-    sheet.getRange(`${sheet.getName()}!C:C`).setBackgroundRGB(255, 255, 255); // Resetar tudo para branco primeiro
-    // Formatação condicional para as colunas de status (para referência)
-    // Regra para Pendente (vermelho claro)
-    sheet.getRange(`${sheet.getName()}!C:C`).setConditionalFormatRules([
-      SpreadsheetApp.newConditionalFormatRule()
-        .whenTextEqualTo("pending")
-        .setBackground("#FFCCCC")
-        .setRanges([sheet.getRange(`${sheet.getName()}!C:C`)])
-        .build(),
-      // Regra para Em Progresso (amarelo claro)
-      SpreadsheetApp.newConditionalFormatRule()
-        .whenTextEqualTo("in_progress")
-        .setBackground("#FFFFCC")
-        .setRanges([sheet.getRange(`${sheet.getName()}!C:C`)])
-        .build(),
-      // Regra para Concluído (verde claro)
-      SpreadsheetApp.newConditionalFormatRule()
-        .whenTextEqualTo("completed")
-        .setBackground("#CCFFCC")
-        .setRanges([sheet.getRange(`${sheet.getName()}!C:C`)])
-        .build(),
-    ]);
   }
-  Logger.log("Planilha de tarefas configurada!");
-}
-
-// Função para testar a implantação (Deploy > Testar implantações)
-function testAPI() {
-  Logger.log("Teste de API executado.");
-  const tasks = fetchTasksInternal();
-  Logger.log("Tarefas: " + JSON.stringify(tasks));
-
-  const newTask = { title: "Tarefa Teste", description: "Descrição Teste", status: "Pendente" };
-  const addedTask = addTaskInternal(newTask);
-  Logger.log("Tarefa adicionada: " + JSON.stringify(addedTask));
-
-  const updatedTask = updateTaskInternal(addedTask.id, { status: "Concluído" });
-  Logger.log("Tarefa atualizada: " + JSON.stringify(updatedTask));
-
-  const deleted = deleteTaskInternal(addedTask.id);
-  Logger.log("Tarefa excluída: " + deleted);
 }
