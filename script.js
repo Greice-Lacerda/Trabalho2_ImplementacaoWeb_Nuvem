@@ -5,12 +5,8 @@ const STATUS_MAP_DB_TO_UI = {
   completed: "Concluída",
 };
 
-// Mapeamento reverso: do formato de exibição (UI) para o formato interno (DB)
-const STATUS_MAP_UI_TO_DB = {
-  Pendente: "pending",
-  "Em Progresso": "in_progress",
-  Concluída: "completed",
-};
+// Esta variável API_URL não é utilizada para `google.script.run` e pode ser removida se não for usada para chamadas fetch/XHR diretas.
+// "https://script.google.com/macros/s/AKfycbxa0l581mXMEb8gVTwy-rkCzJ7h_K35YkmBkWeRHDvJcMiBo-f5BFLCGf5SFPCyJk7P/exec";
 
 // Elementos do DOM
 const messageContainer = document.getElementById("messageContainer");
@@ -88,7 +84,122 @@ function showMessage(msg, type) {
   }, 5000);
 }
 
-// Renderiza a lista de tarefas na interface
+// --- Funções de Interação com o Servidor (Apps Script) ---
+
+/**
+ * Busca todas as tarefas do servidor (Planilha Google) e as renderiza na UI.
+ */
+async function fetchAndRenderTasks() {
+  taskList.innerHTML = "<li>Carregando tarefas...</li>"; // Mensagem de carregamento
+  try {
+    // Chama a função 'fetchTasks' no Code.gs
+    await google.script.run
+      .withSuccessHandler(renderTasks) // Função de sucesso: renderiza as tarefas
+      .withFailureHandler(function (error) {
+        // Função de falha: exibe erro
+        console.error("Erro ao buscar tarefas:", error);
+        showMessage(`Erro ao carregar tarefas: ${error.message}`, "error");
+        taskList.innerHTML = "<li>Erro ao carregar tarefas.</li>";
+      })
+      .fetchTasks(); // Executa a função do lado do servidor
+  } catch (error) {
+    showMessage("Erro de conexão ao carregar tarefas.", "error");
+    taskList.innerHTML = "<li>Erro de conexão ao carregar tarefas.</li>";
+    console.error("Erro ao chamar fetchTasks:", error);
+  }
+}
+
+/**
+ * Adiciona uma nova tarefa ao servidor (Planilha Google).
+ * @param {object} taskData Objeto com os dados da tarefa (title, description, status - em UI/português).
+ */
+async function addTaskToSheet(taskData) {
+  try {
+    // Chama a função 'addTask' no Code.gs
+    await google.script.run
+      .withSuccessHandler(function (data) {
+        console.log("Tarefa adicionada com sucesso:", data);
+        showMessage("Tarefa adicionada com sucesso!", "success");
+        taskTitleInput.value = ""; // Limpa os campos
+        taskDescriptionTextarea.value = "";
+        taskStatusSelect.value = "Pendente"; // Volta para o status padrão
+        if (createShoppingListOption.checked) {
+          generateShoppingCheckboxes();
+        }
+        fetchAndRenderTasks(); // Recarrega a lista de tarefas
+      })
+      .withFailureHandler(function (error) {
+        console.error("Erro ao adicionar tarefa:", error);
+        showMessage(`Erro ao adicionar tarefa: ${error.message}`, "error");
+      })
+      .addTask(taskData);
+  } catch (error) {
+    showMessage("Erro de conexão ao adicionar tarefa.", "error");
+    console.error("Erro ao chamar addTask:", error);
+  }
+}
+
+/**
+ * Atualiza uma tarefa existente no servidor (Planilha Google).
+ * @param {string} taskId O ID da tarefa a ser atualizada.
+ * @param {object} updatedData Os dados atualizados da tarefa (title, description, status - em UI/português).
+ */
+async function updateTaskInSheet(taskId, updatedData) {
+  try {
+    // Chama a função 'updateTask' no Code.gs
+    await google.script.run
+      .withSuccessHandler(function (data) {
+        console.log("Tarefa atualizada com sucesso:", data);
+        showMessage("Tarefa atualizada com sucesso!", "success");
+        updateForm.reset(); // Limpa e oculta o formulário de atualização
+        updateForm.style.display = "none";
+        fetchAndRenderTasks(); // Recarrega a lista de tarefas
+      })
+      .withFailureHandler(function (error) {
+        console.error("Erro ao atualizar tarefa:", error);
+        showMessage(`Erro ao atualizar tarefa: ${error.message}`, "error");
+      })
+      .updateTask(taskId, updatedData);
+  } catch (error) {
+    showMessage("Erro de conexão ao atualizar tarefa.", "error");
+    console.error("Erro ao chamar updateTask:", error);
+  }
+}
+
+/**
+ * Exclui uma tarefa do servidor (Planilha Google).
+ * @param {string} taskId O ID da tarefa a ser excluída.
+ */
+async function deleteTaskFromSheet(taskId) {
+  try {
+    if (confirm(`Tem certeza que deseja excluir a tarefa?`)) {
+      // Confirmação antes de excluir
+      // Chama a função 'deleteTask' no Code.gs
+      await google.script.run
+        .withSuccessHandler(function () {
+          // A função não retorna dados, apenas sucesso/falha
+          console.log("Tarefa excluída.");
+          showMessage("Tarefa excluída com sucesso!", "success");
+          fetchAndRenderTasks(); // Recarrega a lista de tarefas
+        })
+        .withFailureHandler(function (error) {
+          console.error("Erro ao excluir tarefa:", error);
+          showMessage(`Erro ao excluir tarefa: ${error.message}`, "error");
+        })
+        .deleteTask(taskId);
+    }
+  } catch (error) {
+    showMessage("Erro de conexão ao excluir tarefa.", "error");
+    console.error("Erro ao chamar deleteTask:", error);
+  }
+}
+
+// --- Funções de Renderização e Lógica do UI ---
+
+/**
+ * Renderiza a lista de tarefas na interface do usuário.
+ * @param {Array<object>} tasks Um array de objetos de tarefa (com status em UI/português).
+ */
 function renderTasks(tasks) {
   taskList.innerHTML = "";
   if (tasks.length === 0) {
@@ -371,3 +482,6 @@ document.addEventListener("DOMContentLoaded", () => {
   addTaskFormContent.style.display = "block";
   shoppingListContainer.style.display = "none";
 });
+
+// Removido o bloco final de verificação e carregamento condicional do google.script.run,
+// pois o script.js é carregado no momento certo, e google.script.run já deve estar disponível.
