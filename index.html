@@ -120,58 +120,7 @@
         <p>&copy; 2025 Gerenciador de Tarefas. Todos os direitos reservados.</p>
       </div>
     </footer>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script>
-      // Função para carregar a API do Apps Script de forma assíncrona
-      function loadAppsScriptAPI(url) {
-        return new Promise((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = url;
-          script.onload = () => {
-            if (
-              typeof google !== "undefined" &&
-              google.script &&
-              google.script.run
-            ) {
-              resolve();
-            } else {
-              reject(
-                new Error(
-                  "google.script.run não está disponível após carregar o script."
-                )
-              );
-            }
-          };
-          script.onerror = () =>
-            reject(new Error("Falha ao carregar o script do Apps Script."));
-          document.head.appendChild(script);
-        });
-      }
 
-      // IMPORTANTE: SUBSTITUA ESTE URL PELA URL DO SEU GOOGLE APPS SCRIPT WEB APP
-      // VOCÊ OBTERÁ ESTE URL APÓS IMPLANTAR SEU PROJETO APPS SCRIPT (ver passo 5 abaixo)
-      const APPS_SCRIPT_WEB_APP_URL =
-        "https://script.google.com/macros/s/AKfycbxzklfRhvp6sEM8R2PFfWL5ThbrIDYs-jgGJP3tdiKptWk1ahTpxZz77MulJxmLND-q/exec";
-      // Carrega o script do Apps Script ANTES do seu script principal
-      // para garantir que google.script.run esteja disponível.
-      loadAppsScriptAPI(APPS_SCRIPT_WEB_APP_URL)
-        .then(() => {
-          console.log("API do Apps Script carregada com sucesso.");
-          // Agora, carregue o seu script.js
-          const mainScript = document.createElement("script");
-          mainScript.src = "script.js";
-          document.body.appendChild(mainScript);
-        })
-        .catch((error) => {
-          console.error("Erro ao inicializar o Apps Script API:", error);
-          // Opcional: Mostrar uma mensagem de erro na UI
-          document.getElementById(
-            "messageContainer"
-          ).textContent = `Erro crítico: Falha ao carregar o serviço do Apps Script (${error.message}). Por favor, verifique a URL e a implantação.`;
-          document.getElementById("messageContainer").className =
-            "message error";
-          document.getElementById("messageContainer").style.display = "block";
-        });
-    </script>
+    <script src="script.js"></script>
   </body>
 </html>

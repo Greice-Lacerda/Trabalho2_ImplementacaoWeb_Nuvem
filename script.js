@@ -6,9 +6,8 @@ const STATUS_MAP_DB_TO_UI = {
   completed: "Concluído",
 };
 
-// Este é o URL do seu Web App no Google Apps Script
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbxzklfRhvp6sEM8R2PFfWL5ThbrIDYs-jgGJP3tdiKptWk1ahTpxZz77MulJxmLND-q/exec";
+// Esta variável API_URL não é utilizada para `google.script.run` e pode ser removida se não for usada para chamadas fetch/XHR diretas.
+// "https://script.google.com/macros/s/AKfycbxzklfRhvp6sEM8R2PFfWL5ThbrIDYs-jgGJP3tdiKptWk1ahTpxZz77MulJxmLND-q/exec";
 
 // --- Elementos do DOM ---
 const messageContainer = document.getElementById("messageContainer");
@@ -230,12 +229,12 @@ function renderTasks(tasks) {
 
     li.innerHTML = `
       <span class="task-title">${task.title}</span> ${
-      task.description // Exibe a descrição se houver
-        ? `<p class="task-description">${task.description}</p>`
-        : ""
-    }
+        task.description // Exibe a descrição se houver
+          ? `<p class="task-description">${task.description}</p>`
+          : ""
+      }
       <div class="task-actions">
-        <span class="task-status">${displayStatus}</span> 
+        <span class="task-status">${displayStatus}</span>
         <select class="status-selector">
           <option value="Pendente" ${
             displayStatus === "Pendente" ? "selected" : ""
@@ -406,8 +405,8 @@ cancelUpdateBtn.addEventListener("click", () => {
 
 // --- Inicialização ---
 document.addEventListener("DOMContentLoaded", () => {
-  // fetchAndRenderTasks() só é chamado APÓS a API do Apps Script ser carregada
-  // (Lógica de carregamento agora está no index.html)
+  // Chamada direta para fetchAndRenderTasks, pois google.script.run já deve estar disponível
+  fetchAndRenderTasks();
 
   generateShoppingCheckboxes(); // Gera os checkboxes da lista de compras
   // Garante que o formulário de adicionar tarefa esteja visível por padrão
@@ -416,16 +415,5 @@ document.addEventListener("DOMContentLoaded", () => {
   shoppingListContainer.style.display = "none";
 });
 
-// Adiciona o listener para o carregamento da API do Apps Script
-// Esta parte será executada APÓS o script do Apps Script ser carregado pelo index.html
-// e disponibilizar `google.script.run`.
-if (typeof google !== "undefined" && google.script && google.script.run) {
-  // Se já carregou, pode renderizar as tarefas imediatamente
-  fetchAndRenderTasks();
-} else {
-  // Caso contrário, significa que há um problema com o carregamento da API.
-  // A mensagem de erro já será tratada no index.html.
-  console.error(
-    "google.script.run não está disponível. Verifique o carregamento da API do Apps Script no index.html."
-  );
-}
+// Removido o bloco final de verificação e carregamento condicional do google.script.run,
+// pois o script.js é carregado no momento certo, e google.script.run já deve estar disponível.
