@@ -36,21 +36,21 @@ Excluir (Delete): Remover uma tarefa do sistema.
 
 📁 Estrutura do Projeto
 
-O projeto está organizado da seguinte forma:
-_________________________________________________________________________________________________________________
-Arquitetura
-_________________________________________________________________________________________________________________
-Trabalho2/                          |
-├── client/                         |# Contém todos os arquivos do frontend
-│   ├── index.html                  |# Página principal da aplicação
-│   ├── style.css                   |# Estilos CSS
-│   ├── script.js                   | # Lógica JavaScript do cliente
-│   └── .nojekyll                   |# Arquivo para desativar o Jekyll no GitHub Pages
-└── GoogleAppsScript/               |# Código do Google Apps Script (não é uma pasta física no repositório local)
-    └── GoogleApi.js                |# Arquivo de código .gs (equivalente ao app.py/backend)
-____________________________________|_____________________________________________________________________________
+O projeto está organizado logicamente da seguinte forma:
 
-Observação: O arquivo GoogleApi.js é o código que você deve colar no editor de script do Google Apps Script. Ele não é uma pasta física em um repositório local, mas sim um arquivo de código implantado na nuvem do Google.
+| Diretório/Arquivo | Descrição |
+| :---------------- | :-------- |
+| `Trabalho2/`      | Diretório raiz do projeto. |
+| ├── `client/`     | Contém todos os arquivos do frontend (aplicação cliente). |
+| │   ├── `index.html`| Página principal da aplicação web. |
+| │   ├── `style.css` | Folha de estilos CSS para o layout e aparência da interface. |
+| │   ├── `script.js` | Lógica JavaScript principal do cliente, responsável pela interação com a API e manipulação do DOM. |
+| │   └── `.nojekyll` | Arquivo vazio que desativa o processamento do Jekyll no GitHub Pages, garantindo que o HTML e JS sejam servidos como estão. |
+| └── `GoogleAppsScript/` | Representa o código do backend implantado no Google Apps Script (não é uma pasta física no repositório local). |
+| &nbsp;&nbsp;&nbsp;&nbsp; | Arquivo de código `.gs` contendo a lógica do serviço web (API RESTful) que interage com o Google Sheets. |
+
+## 📦 Como Rodar o Projeto
+
 
 📦 Como Rodar o Projeto
 Siga os passos abaixo para configurar e executar o projeto.
