@@ -373,41 +373,49 @@ function renderTasks(tasks) {
 // --- Event Listeners ---
 
 // Adicionar nova tarefa
+// script.js
 taskForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const title = taskTitleInput.value.trim();
-  let description = taskDescriptionTextarea.value.trim();
-  const status = taskStatusSelect.value;
+  let title = taskTitleInput.value.trim(); // Mude para 'let' para poder reatribuir
+  let description = taskDescriptionTextarea.value.trim(); // Mude para 'let'
+  const statusUI = taskStatusSelect.value;
+
+  if (createShoppingListOption.checked) {
+    const selectedItems = Array.from(
+      shoppingListCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
+    ).map((checkbox) => `- ${checkbox.value}`);
+
+    if (selectedItems.length === 0) {
+      showMessage(
+        "Selecione pelo menos um item para a lista de compras.",
+        "error"
+      );
+      return;
+    }
+
+    // Definir o título e a descrição para a lista de compras
+    title = "Lista de Compras"; // Agora a variável 'title' será "Lista de Compras"
+    description = selectedItems.join("\n");
+
+    // Atualizar os campos do formulário para mostrar o que será salvo
+    taskTitleInput.value = title;
+    taskDescriptionTextarea.value = description;
+  }
 
   if (!title) {
     showMessage("O título da tarefa é obrigatório.", "error");
     return;
   }
 
-  // Se a opção de lista de compras estiver marcada, a descrição vem dos checkboxes
-  if (createShoppingListOption.checked) {
-    description = getSelectedShoppingItems();
-    if (!title && description) {
-      // Se nenhum título foi dado, mas itens foram selecionados
-      showMessage(
-        "Por favor, dê um título para sua lista de compras ou selecione itens.",
-        "error"
-      );
-      return;
-    }
-    if (!description && !title) {
-      showMessage(
-        "Selecione os itens para a lista de compras ou digite um título.",
-        "error"
-      );
-      return;
-    }
-    // Se o usuário não digitou um título para a lista de compras, pode usar um padrão
-    if (!title && description) {
-      taskTitleInput.value = "Lista de Compras";
-    }
-  }
+  const taskData = {
+    titulo: title, // Agora 'title' terá o valor correto ("Lista de Compras" ou o que foi digitado)
+    descricao: description, // Agora 'description' terá os itens da lista ou o que foi digitado
+    status: statusUI,
+  };
+
+  await addTaskToSheet(taskData);
+});
 
   const taskData = {
     titulo: title || taskTitleInput.value, // Usa o título digitado ou o "Lista de Compras" se preenchido via JS
