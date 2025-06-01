@@ -2,10 +2,10 @@
 
 Este projeto implementa um sistema web interativo para gerenciamento de tarefas (To-Do List). O backend é construído com Google Apps Script, que interage diretamente com uma planilha do Google Sheets para armazenamento de dados, funcionando como um serviço web RESTful. O cliente é uma aplicação web dinâmica desenvolvida com HTML, CSS e JavaScript.
 
-📅 ### Data de Entrega
+📅 Data de Entrega
 5 de Junho
 
-🚀 ## Funcionalidades
+🚀 Funcionalidades
 
 O sistema permite realizar as quatro operações básicas de um CRUD (Create, Read, Update, Delete) em tarefas, além de uma funcionalidade para gerar listas de compras:
 
@@ -18,7 +18,7 @@ O sistema permite realizar as quatro operações básicas de um CRUD (Create, Re
 * Atualizar (Update): Modificar o título, descrição e/ou status de uma tarefa existente.
 Excluir (Delete): Remover uma tarefa do sistema.
 
-⚙️ ## Tecnologias Utilizadas
+⚙️ Tecnologias Utilizadas
 
 ### Backend (Serviço Web):
 
@@ -26,7 +26,7 @@ Excluir (Delete): Remover uma tarefa do sistema.
 
 * Google Sheets: Utilizado como o banco de dados para armazenar as tarefas.
 
-###Frontend (Cliente):
+### Frontend (Cliente):
 
 * HTML5: Estrutura da página web.
 
@@ -34,21 +34,25 @@ Excluir (Delete): Remover uma tarefa do sistema.
 
 * JavaScript (ES6+): Lógica para interagir com a API do Google Apps Script (requisições fetch), manipular o DOM e tornar a interface interativa.
 
-📁 ## Estrutura do Projeto
-O projeto está organizado da seguinte forma:
+📁 Estrutura do Projeto
 
-Trabalho2/
-├── client/                     # Contém todos os arquivos do frontend
-│   ├── index.html              # Página principal da aplicação
-│   ├── style.css               # Estilos CSS
-│   ├── script.js               # Lógica JavaScript do cliente
-│   └── .nojekyll               # Arquivo para desativar o Jekyll no GitHub Pages
-└── GoogleAppsScript/           # Código do Google Apps Script (não é uma pasta física no repositório local)
-    └── GoogleApi.js            # Arquivo de código .gs (equivalente ao app.py/backend)
+O projeto está organizado da seguinte forma:
+_________________________________________________________________________________________________________________
+Arquitetura
+_________________________________________________________________________________________________________________
+Trabalho2/                          |
+├── client/                         |# Contém todos os arquivos do frontend
+│   ├── index.html                  |# Página principal da aplicação
+│   ├── style.css                   |# Estilos CSS
+│   ├── script.js                   | # Lógica JavaScript do cliente
+│   └── .nojekyll                   |# Arquivo para desativar o Jekyll no GitHub Pages
+└── GoogleAppsScript/               |# Código do Google Apps Script (não é uma pasta física no repositório local)
+    └── GoogleApi.js                |# Arquivo de código .gs (equivalente ao app.py/backend)
+____________________________________|_____________________________________________________________________________
 
 Observação: O arquivo GoogleApi.js é o código que você deve colar no editor de script do Google Apps Script. Ele não é uma pasta física em um repositório local, mas sim um arquivo de código implantado na nuvem do Google.
 
-📦 ## Como Rodar o Projeto
+📦 Como Rodar o Projeto
 Siga os passos abaixo para configurar e executar o projeto.
 
 ## Pré-requisitos
@@ -58,8 +62,7 @@ Uma conta Google (para Google Sheets e Google Apps Script).
 Um navegador web moderno.
 
 ## 1. Configurar o Backend (Google Sheets e Google Apps Script)
-   
-   
+    
 ### a. Criar a Planilha Google (Banco de Dados)
 
 Acesse Google Sheets.
@@ -94,7 +97,7 @@ Clique no botão Tipo (ao lado da engrenagem) e selecione Aplicativo da Web.
 
 ### Configure:
 
-Descrição da implantação: (Opcional, ex: "API Gerenciador de Tarefas")
+#### Descrição da implantação: (Opcional, ex: "API Gerenciador de Tarefas")
 
 Executar como: Eu (seu e-mail)
 
@@ -105,8 +108,8 @@ A primeira vez, o Google pode pedir permissão. Conceda as permissões necessár
 
 Após a implantação, você receberá uma URL do Aplicativo da Web. Copie esta URL. Ela será o seu API_URL.
 
-2. Configurar o Frontend (Aplicação Cliente)
-   
+## 2. Configurar o Frontend (Aplicação Cliente)
+      
 Abra o arquivo client/script.js em seu editor de código.
 
 No início do arquivo, localize a linha const API_URL = "...";.
@@ -117,7 +120,7 @@ JavaScript
 const API_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI/exec";
 Salve o arquivo client/script.js.
 
-1. Acessar a Aplicação
+## 3. Acessar a Aplicação
 
 Localmente: Abra o arquivo Trabalho2/client/index.html diretamente no seu navegador.
 
@@ -125,8 +128,7 @@ Via GitHub Pages: Se você já configurou o GitHub Pages para este repositório 
 
 A aplicação cliente agora se comunicará com o seu serviço web do Google Apps Script, gerenciando as tarefas na sua planilha do Google Sheets.
 
-🚀 ## Implantação no GitHub Pages
-
+🚀 Implantação no GitHub Pages
 
 O frontend desta aplicação está configurado para ser implantado facilmente utilizando o GitHub Pages.
 
@@ -141,8 +143,8 @@ Clique em "Save".
 
 Sua aplicação frontend estará acessível em https://SEU_USUARIO.github.io/SEU_REPOSITORIO/.
 
-🤝 ## Contribuição
+🤝 Contribuição
 Sinta-se à vontade para abrir issues ou pull requests caso encontre bugs ou queira propor melhorias.
 
-📄 ## Licença
+📄 Licença
 Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE.md para mais detalhes. (Se você não tiver um arquivo LICENSE.md, pode remover esta seção ou criá-lo).
