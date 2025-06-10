@@ -1,4 +1,3 @@
-/* Reset e base */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
@@ -9,27 +8,30 @@ body {
 }
 
 .container {
-  max-width: 850px;
+  max-width: 1200px; /* Aumentado para acomodar as colunas */
   margin: 20px auto;
   padding: 25px;
   background: #ffffff;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex; /* Adicionado para layout em coluna */
+  flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha */
+  gap: 20px; /* Espaçamento entre as colunas */
 }
 
 /* Cabeçalho */
 header {
   background-color: #007bff;
   color: white;
-  padding: 20px 0;
+  padding: 1px 0;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  margin-bottom: 1px;
+  width: 100%; /* Ocupa a largura total para ficar acima das colunas */
 }
 
 header h1 {
-  margin: center;
-  font-size: 60px;
+  margin: 2px auto;
+  font-size: 80px;
   color: black;
   text-shadow: #044d9b 4px 4px 4px;
 }
@@ -42,6 +44,7 @@ header h1 {
   display: none;
   font-weight: bold;
   text-align: center;
+  width: 100%; /* Mensagens também ocupam a largura total */
 }
 
 .message.success {
@@ -60,21 +63,31 @@ header h1 {
 .options {
   display: flex;
   justify-content: center;
-  gap: 25px;
+  gap: 100px;
   margin-bottom: 25px;
-  background-color: #f8f9fa;
+  background-color: #0b7aea;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%; /* Ocupa a largura total para ficar acima das colunas */
 }
 
 .options label {
   cursor: pointer;
   padding: 8px 15px;
+  font-size: 18px;
+  background-color: #93b8dd;
+  border: outset 5px #dce7f1;
   border-radius: 5px;
   transition: background-color 0.3s ease;
-  font-weight: 500;
+  font-weight: 500;  
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.5);
   color: #495057;
+}
+
+.options label:hover {
+  background-color: #4711f8; /* Verde mais escuro no hover */
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); /* Sombra menor no hover */
+  color: white;
 }
 
 .options input[type="radio"] {
@@ -88,15 +101,23 @@ header h1 {
 }
 
 /* Seções de Formulário e Lista */
-.form-section {
-  background-color: #f8f9fa;
+.form-section,
+.tasks-list-section {
+  background-color: #ebf3fa;
   padding: 25px;
   border-radius: 8px;
   margin-bottom: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.5);
+  flex: 1; /* Permite que as seções se expandam e contraiam */
+  min-width: 300px; /* Largura mínima para evitar que fiquem muito pequenas */
 }
 
-.form-section h2 {
+.tasks-list-section {
+  background-color: #f8eaea; /* Ajusta a cor de fundo para a lista de tarefas */
+}
+
+.form-section h2,
+.tasks-list-section h2 {
   color: #007bff;
   margin-top: 0;
   margin-bottom: 20px;
@@ -154,28 +175,59 @@ textarea:focus {
   cursor: pointer;
   font-size: 1.1em;
   font-weight: bold;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease,
+    transform 0.1s ease; /* Adicionado transform */
   margin-right: 10px; /* Espaçamento entre botões */
 }
 
+/* Ajuste para o botão verde */
 .primary-button {
-  background-color: #007bff;
+  background-color: #28a745; /* Verde */ 
+  width: 270px; 
+  box-shadow: 10px 10px 2px rgba(0, 0, 0, 1);
   color: white;
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.5); /* Sombra para o efeito outset */
+  border-bottom: 3px solid #1e7e34; /* Borda para dar profundidade */
+  border-right: 3px solid #1e7e34;
 }
 
 .primary-button:hover {
-  background-color: #0056b3;
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+  background-color: #218838; /* Verde mais escuro no hover */
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); /* Sombra menor no hover */
+  transform: translateY(1px); /* Pequeno deslocamento para baixo no hover */
+  border-bottom: 2px solid #1e7e34; /* Borda menor no hover */
+  border-right: 2px solid #1e7e34;
 }
 
+.primary-button:active {
+  background-color: #1e7e34; /* Verde ainda mais escuro ao clicar */
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.3); /* Sombra interna para efeito de clique */
+  transform: translateY(2px); /* Deslocamento maior para baixo ao clicar */
+  border: none; /* Remove a borda para simular o "afundar" */
+}
+
+/* O secondary-button pode manter o estilo original ou ser ajustado também */
 .secondary-button {
   background-color: #6c757d;
   color: white;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Sombra para o efeito outset */
+  border-bottom: 3px solid #545b62; /* Borda para dar profundidade */
+  border-right: 3px solid #545b62;
 }
 
 .secondary-button:hover {
   background-color: #5a6268;
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+  transform: translateY(1px);
+  border-bottom: 2px solid #545b62;
+  border-right: 2px solid #545b62;
+}
+
+.secondary-button:active {
+  background-color: #545b62;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateY(2px);
+  border: none;
 }
 
 /* Checkbox list para lista de compras */
@@ -198,6 +250,7 @@ textarea:focus {
   font-weight: normal;
   color: #343a40;
   cursor: pointer;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
 }
 
 .checkbox-list input[type="checkbox"] {
@@ -215,21 +268,6 @@ textarea:focus {
 }
 
 /* Lista de Tarefas */
-.tasks-list-section {
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-}
-
-.tasks-list-section h2 {
-  color: #007bff;
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 1.8em;
-  text-align: center;
-}
-
 .task-list {
   list-style: none;
   padding: 0;
@@ -257,13 +295,14 @@ textarea:focus {
 
 .task-title {
   font-weight: bold;
-  font-size: 1.4em;
+  font-size: 24px;
   color: #0056b3;
+  text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.5);
 }
 
 .task-description {
   font-size: 1em;
-  color: #555;
+  color: #555;  
   white-space: pre-wrap; /* Preserva quebras de linha e espaços */
 }
 
@@ -274,39 +313,51 @@ textarea:focus {
   gap: 10px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #eee;  
 }
 
 .task-status {
   font-weight: bold;
-  padding: 6px 10px;
+  padding: 6px auto;
   border-radius: 5px;
   font-size: 0.9em;
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
 }
 
 /* Estilos de status para os LIs */
 .status-pending .task-status {
-  background-color: #ffc107; /* Amarelo */
+  width: 120px;
+  background-color: #d7e912; /* Amarelo */
   color: #333;
+  padding: 10px;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
 }
 
 .status-in_progress .task-status {
-  background-color: #17a2b8; /* Azul claro */
+  background-color: #3dd5cb; /* Azul claro */
+  width: 120px;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
+  padding:10px;
 }
 
 .status-completed .task-status {
-  background-color: #28a745; /* Verde */
+  width: 120px;
+  background-color: #5bed21; /* Verde */
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
+  padding:12px;
 }
 
 /* Seletor de Status dentro da lista (para atualização rápida) */
 .status-selector {
-  padding: 8px;
+  width: 130px;
+  padding: 12px;
   border: 1px solid #ced4da;
   border-radius: 5px;
   font-size: 0.95em;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
   background-color: white;
   cursor: pointer;
   max-width: 150px; /* Limita a largura para melhor visualização */
@@ -315,17 +366,20 @@ textarea:focus {
 /* Botões de ação da tarefa (Editar, Excluir) */
 .action-button {
   padding: 8px 12px;
-  border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9em;
-  font-weight: 600;
   transition: background-color 0.2s ease;
 }
 
 .edit-btn {
   background-color: #ffc107;
-  color: #333;
+  width: 130px;
+  height: 40px;
+  border-radius: 5px; 
+  font-style: bold;
+  font-size: 18px;
+  color: white;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
 }
 
 .edit-btn:hover {
@@ -334,7 +388,13 @@ textarea:focus {
 
 .delete-btn {
   background-color: #dc3545;
+  width: 130px;
+  height: 40px;
+  border-radius: 5px; 
+  font-style: bold;
+  font-size: 18px;
   color: white;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 1);
 }
 
 .delete-btn:hover {
@@ -346,6 +406,7 @@ textarea:focus {
   .container {
     margin: 15px;
     padding: 20px;
+    flex-direction: column; /* Volta para coluna em telas menores */
   }
 
   header h1 {
@@ -387,4 +448,8 @@ textarea:focus {
   .checkbox-list {
     grid-template-columns: 1fr; /* Uma coluna em telas menores */
   }
+}
+
+#footerg{
+  margin: 10px auto;
 }
